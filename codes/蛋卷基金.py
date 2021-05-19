@@ -9,6 +9,7 @@ header={
 }
 
 danjuan=['CSI1033','CSI1032','CSI1038','CSI1029','CSI1006','CSI1065']
+danjuan.sort()
 
 def getfund(code):
     url='https://danjuanapp.com/djapi/plan/'+code

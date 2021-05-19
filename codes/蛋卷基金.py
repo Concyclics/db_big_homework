@@ -27,8 +27,8 @@ def getfund(code):
 
 #获取历史净值
 def gethistory(code, size):
+    
     try: int(size)
-        
     except ValueError:
         print("输入整数")
         return 
@@ -36,6 +36,7 @@ def gethistory(code, size):
     if size<=0:
         print("输入正数")
         return
+    
     url='https://danjuanapp.com/djapi/plan/nav/history/'+code+'?size='+str(size)+'&page=1'
     page=requests.get(url,headers=header).text
     

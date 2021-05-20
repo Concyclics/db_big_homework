@@ -24,6 +24,20 @@ def getfund(code):
     name=items.get('plan_name')
     
     print("基金编号:",code,'\n基金名:',name,"\n日期:",date,"净值:",value)
+    
+def getdetail(code):
+    url='https://danjuanapp.com/djapi/plan/nav/indicator?plan_code='+code
+    page=requests.get(url,headers=header).text
+    
+    items=json.loads(page)
+    items=items.get("data")
+    
+    maxdown=items.get('max_drawdown')
+    volatility=items.get('volatility')
+    sharpe=items.get('sharpe')
+    
+    print('最大回撤:',maxdown,'年华波动率:',volatility,'夏普率:',sharpe,'\n')
+    
 
 #获取历史净值
 def gethistory(code, size):
@@ -50,5 +64,7 @@ def gethistory(code, size):
 if __name__=='__main__':
     for code in danjuan:
         getfund(code)
+        getdetail(code)
         gethistory(code,10)
+        
         

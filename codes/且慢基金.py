@@ -24,10 +24,9 @@ head={
 'User-Agent':'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36 Edg/90.0.818.62',
 'x-aid':'A.89E6C0E01F626WKBNDHW8K17N48X508J6',
 'x-request-id':'albus.840A00E6BEAC0A65A48B',
-'x-sign':'16215139079688FC87ECE35E223D6BC47FAF2096A0DD0'
+'x-sign':'162156650843332A579E8505A7B5A7BB5CB69D6AA6BDD'
 }
-
-
+#1621566508433」32A579E8505A7B5A7BB5CB69D6AA6BDD
+#前13位为时间戳，后32位未知
 print(requests.get(url,headers=head).text)
-
 

@@ -36,7 +36,7 @@ def getdetail(code):
     volatility=items.get('volatility')
     sharpe=items.get('sharpe')
     
-    print('最大回撤:',maxdown,'年华波动率:',volatility,'夏普率:',sharpe,'\n')
+    print('最大回撤:',maxdown,'年化波动率:',volatility,'夏普率:',sharpe,'\n')
     
 
 #获取历史净值

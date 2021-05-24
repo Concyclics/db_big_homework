@@ -22,9 +22,9 @@ create table funds
 create table historys
 (
 	code varchar(20),
-	value float not null check (value>0),
+	value float not null check (value>=0),
 	day date,
-	primary key(code,date),
+	primary key(code,day),
 	foreign key(code) references funds(code)
 		on delete cascade
 		on update cascade

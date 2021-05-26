@@ -1,7 +1,7 @@
 # coding=gbk
-from selenium import webdriver
+from selenium import webdriver  #éœ€è¦å®‰è£…seleniumåº“
 import time
-import bs4  #ĞèÒª°²×°¸Ãbs4¿â
+import bs4  #éœ€è¦å®‰è£…bs4åº“
 import re
 from selenium.webdriver.common import desired_capabilities
 
@@ -12,36 +12,37 @@ findname = re.compile(r'<div class="qm-header qm-header-1">(.*?)</div>')
 finddata = re.compile(r'<span class="qm-amount qm-amount-std">(.*?)</span>')
 findwithdrawal = re.compile(r'<span class="qm-percent qm-percent-std">(.*?)</span>')
 
-def getfund(code):  #»ñÈ¡µ±ÈÕ¾»ÖµµÈĞÅÏ¢
+def getfund(code):  #è·å–å½“æ—¥å‡€å€¼ç­‰ä¿¡æ¯
     try:
         code = str(code)
     except:
         print("wrong code!")
         return False
     datalist = []
-    #ĞèÒªÔÚwindowsÉÏ°²×°PhantomJS,Ò»¸öÎŞÍ·ä¯ÀÀÆ÷,pathÎªexeÎÄ¼şÂ·¾¶
+    #éœ€è¦åœ¨windowsä¸Šå®‰è£…PhantomJS,ä¸€ä¸ªæ— å¤´æµè§ˆå™¨,pathä¸ºexeæ–‡ä»¶è·¯å¾„
+    #PhantomJSä¸‹è½½åœ°å€: https://phantomjs.org/download.html
     driver = webdriver.PhantomJS(executable_path=r"C:\Users\86178\Desktop\phantomjs-2.1.1-windows\bin\phantomjs.exe")
     driver.get(qiemanURL+code)
     content = driver.page_source.encode("utf-8")
     soup = bs4.BeautifulSoup(content,"html.parser")
     for item in soup.find_all('div'):
         item = str(item)
-        name = re.findall(findname,item)[0]#»ù½ğÃû³Æ
-        data = re.findall(finddata,item)[1]#¾»Öµ
-        sharp = re.findall(finddata,item)[2]#ÏÄÆÕÂÊ
-        withdrawal = re.findall(findwithdrawal,item)[0]#×î´ó»Ø³·
-        volatility = re.findall(findwithdrawal,item)[1]#Äê»¯²¨¶¯ÂÊ
-        datalist.append(['»ù½ğ±àºÅ',code])
-        datalist.append(['»ù½ğÃû³Æ',name])
-        datalist.append(['µ±ÈÕ¾»Öµ',data])
-        datalist.append(['ÏÄÆÕÂÊ',sharp])
-        datalist.append(['×î´ó»Ø³·',withdrawal])
-        datalist.append(['Äê»¯²¨¶¯ÂÊ',volatility])
-        # print('»ù½ğÃû³Æ:',name)
-        # print('µ±ÈÕ¾»Öµ:',data)
-        # print('ÏÄÆÕÂÊ:',sharp)
-        # print('×î´ó»Ø³·: ',withdrawal,'%',sep='')
-        # print('Äê»¯²¨¶¯ÂÊ: ',volatility,'%',sep='')
+        name = re.findall(findname,item)[0]#åŸºé‡‘åç§°
+        data = re.findall(finddata,item)[1]#å‡€å€¼
+        sharp = re.findall(finddata,item)[2]#å¤æ™®ç‡
+        withdrawal = re.findall(findwithdrawal,item)[0]#æœ€å¤§å›æ’¤
+        volatility = re.findall(findwithdrawal,item)[1]#å¹´åŒ–æ³¢åŠ¨ç‡
+        datalist.append(['åŸºé‡‘ç¼–å·',code])
+        datalist.append(['åŸºé‡‘åç§°',name])
+        datalist.append(['å½“æ—¥å‡€å€¼',data])
+        datalist.append(['å¤æ™®ç‡',sharp])
+        datalist.append(['æœ€å¤§å›æ’¤',withdrawal])
+        datalist.append(['å¹´åŒ–æ³¢åŠ¨ç‡',volatility])
+        # print('åŸºé‡‘åç§°:',name)
+        # print('å½“æ—¥å‡€å€¼:',data)
+        # print('å¤æ™®ç‡:',sharp)
+        # print('æœ€å¤§å›æ’¤: ',withdrawal,'%',sep='')
+        # print('å¹´åŒ–æ³¢åŠ¨ç‡: ',volatility,'%',sep='')
         break
     del driver,item,soup,content
     return datalist

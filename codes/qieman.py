@@ -1,4 +1,4 @@
-# coding=gbk
+# coding=utf8
 from selenium import webdriver  #需要安装selenium库
 import time
 import bs4  #需要安装bs4库

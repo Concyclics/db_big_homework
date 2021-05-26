@@ -1,5 +1,6 @@
 #by concyclics
 import pymysql
+import fundation
 
 def DBconnect(hosts='localhost',username='root',password='19260817'):
     try: pymysql.connect(host=hosts,user=username,passwd=password)

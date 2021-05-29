@@ -198,6 +198,50 @@ def checkHistory(database, code:str, day):
     else:
         return False
 
+def updateFund(database, code:str, fund1:fundation.fund):
+    if type(database).__name__ != 'Connection':
+        return False
+    cursor = database.cursor()
+    update_sql = """
+    use fundation;
+    UPDATE funds
+    set found_date = \"""" + str(fund1.found_date) + "\", sharp_rate = "\
+    + str(fund1.sharp_rate) + ", max_down = "\
+    + str(fund1.max_down) + ", volatility = "\
+    + str(fund1.volatility)\
+    +"""
+    where code = \"""" + str(code) + "\";"
+    #print(update_sql)
+    try:
+        for line in splitSql(update_sql):
+            cursor.execute(line)
+            database.commit()
+    except Exception:
+        database.rollback()
+        return False
+    else:
+        return True
+
+def updateHistory(database, code:str, day, history1:fundation.history):
+    if type(database).__name__ != 'Connection':
+        return False
+    cursor = database.cursor()
+    update_sql = """
+    use fundation;
+    UPDATE history
+    set value = """ + str(history1.value) \
+    +"""
+    where code = \"""" + str(code) + "\" and day = \"" + str(day) + "\";"
+    print(update_sql)
+    try:
+        for line in splitSql(update_sql):
+            cursor.execute(line)
+            database.commit()
+    except Exception:
+        database.rollback()
+        return False
+    else:
+        return True
 
 if __name__ == '__main__':
     DB = DBconnect()
@@ -212,3 +256,7 @@ if __name__ == '__main__':
     print(checkHistory(DB, "1122", "2000-01-01"))
     history_set = getHistory(DB, "1122", '1999-10-12', '2009-12-30')
     history_set[0].display()
+    fund2 = fundation.fund(code='1122', name="nishizhu", found_date="2001-11-16", sharp_rate=1.0, max_down=9.0, volatility=9)
+    updateFund(DB, "1122", fund2)
+    history2 = fundation.history(code='1122', day='2000-01-01', value= 10)
+    updateHistory(DB, "1122", "2000-01-01", history2)

@@ -65,11 +65,11 @@ def gethistory_danjuan(code, size=10000):
     
     try: int(size)
     except ValueError:
-        print("输入整数")
+        raise ValueError('请给size一个整数！')
         return 
     size=int(size)
     if size<=0:
-        print("输入正数")
+        raise ValueError('size要大于0！')
         return
     
     url='https://danjuanapp.com/djapi/plan/nav/history/'+code+'?size='+str(size)+'&page=1'
@@ -79,7 +79,12 @@ def gethistory_danjuan(code, size=10000):
     if items.get('result_code')==91003:
         raise ValueError('请检查code')
         
-    items=items.get("data").get("items")
+    items=items.get("data")
+    if(items.get('total_items')==0):
+        raise ValueError('请检查code')
+        return
+        
+    items=items.get("items")
     
     list=[]
     
@@ -127,6 +132,15 @@ def getfund_qieman(code):
 #获取历史净值
 def gethistory_qieman(code,size=10000):
     
+    try: int(size)
+    except ValueError:
+        raise ValueError('请给size一个整数！')
+        return 
+    size=int(size)
+    if size<=0:
+        raise ValueError('size要大于0！')
+        return
+    
     url='https://qieman.com/pmdj/v1/pomodels/'+code+'/nav-history'
     page=requests.get(url,headers=header_for_qieman).text
     
@@ -134,6 +148,15 @@ def gethistory_qieman(code,size=10000):
         raise ValueError('请设置x-sign或检查code')
     
     items=json.loads(page)
+    
+    resultcode=''
+    try:
+        resultcode=items.get('code')
+    except Exception:
+        pass
+        
+    if resultcode=='1600':
+        raise ValueError('请检查code')
     
     list=[]
     
@@ -145,18 +168,42 @@ def gethistory_qieman(code,size=10000):
         list.append(fundation.history(code=code,day=day,value=value))
         
     return list
+
+
+def getFund(code):
+    try:
+        fund=getfund_danjuan(code)
+    except ValueError:
+        fund=getfund_qieman(code)
+    
+    return fund
+
+def getHistory(code,size=10):
+    
+    try: int(size)
+    except ValueError:
+        raise ValueError('请给size一个整数！')
+        return 
+    size=int(size)
+    if size<=0:
+        raise ValueError('size要大于0！')
+        return
+    
+    try:
+        history=gethistory_danjuan(code,size)
+    except ValueError:
+        history=gethistory_qieman(code,size)
+    
+    return history
     
 if __name__=='__main__':
-    for code in danjuan:
-        fund=getfund_danjuan(code)
-        fund.display()
-        historys=gethistory_danjuan(code,10)
-        for i in historys:
-            i.display()
-        
-    for code in qieman:
-        fund=getfund_qieman(code)
-        fund.display()
-        historys=gethistory_qieman(code,10)
-        for i in historys:
-            i.display()
+
+    for code in danjuan+qieman:
+        getFund(code).display()
+        for x in getHistory(code):
+            x.display()
+
+    #print(gethistory_danjuan(qieman[0]))
+    #print(gethistory_danjuan(danjuan[0]))
+    #print(gethistory_qieman(danjuan[0]))
+    #print(getHistory(qieman[0]))

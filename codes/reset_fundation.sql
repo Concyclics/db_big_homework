@@ -2,7 +2,7 @@
 #for db_big_homework
 
 #reset
-drop database fundation;
+drop database if exists fundation;
 create database fundation;
 use fundation;
 

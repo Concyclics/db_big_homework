@@ -20,7 +20,7 @@ def DBinit(database):
         return False
     cursor=database.cursor()
     reset_sql="""
-    drop database fundation;
+    drop database if exists fundation;
     create database fundation;
     use fundation;
     create table funds
@@ -51,13 +51,12 @@ def DBinit(database):
             database.commit()
     except:
         database.rollback()
-        return False
     else:
         return True
     
-def addFund():
+#def addFund():
 
-def addHistory():
+#def addHistory():
     
 
 

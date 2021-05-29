@@ -8,7 +8,7 @@ qieman=['ZH001798','ZH012926','ZH039471','ZH010246','ZH006498','ZH000193','ZH009
 
 #x-sign记得每天更新
 header={
-'x-sign':'162208614727786A25459D7CF9AA74ECF7F4A32AEBF39'
+'x-sign':'1622257424529E36D03062A5903D91302F2E81F164D94'
 }
 #1621566508433」32A579E8505A7B5A7BB5CB69D6AA6BDD
 #前13位为时间戳，后32位未知
@@ -24,12 +24,17 @@ def getfund(code):
 	url='https://qieman.com/pmdj/v1/pomodels/'+code
 	page=requests.get(url,headers=header).text
 	
+	if(page==''):
+		raise ValueError('请设置x-sign或检查code')
+	
 	items=json.loads(page)
 	
 	
 	value=items.get("nav")
 	date=items.get("navDate")
 	name=items.get("poName")
+	
+	found=items.get('establishedOn')
 	
 	print("基金编号:",code,'\n基金名:',name,"\n日期:",date,"净值:",value)
 	

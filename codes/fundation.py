@@ -7,6 +7,14 @@ class fund:
         self.sharp_rate:float=sharp_rate
         self.max_down:float=max_down
         self.volatility:float=volatility
+        
+    def display(self):
+        print('code:',self.code)
+        print('name:',self.name)
+        print('found_date:',self.found_date)
+        print('sharp_rate:',self.sharp_rate)
+        print('max_down:',self.max_down)
+        print('volatility:',self.volatility)
 
 class history:
     def __init__(self,*,code:str,day='1970-01-01',value=0.0):
@@ -17,7 +25,13 @@ class history:
             value=0.0
         self.value:float=value
 
+    def display(self):
+        print('code:',self.code)
+        print('day:',self.day)
+        print('value:',self.value)
 
 if __name__=='__main__':
     X=fund(code='CS11033',name='蛋卷基金')
+    X.display()
     Y=history(code='CS11033',value=233)
+    Y.display()

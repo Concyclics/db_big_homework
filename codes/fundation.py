@@ -31,7 +31,7 @@ class history:
         print('value:',self.value)
 
 if __name__=='__main__':
-    X=fund(code='CS11033',name='蛋卷基金')
+    X=fund(code='CS11033')
     X.display()
     Y=history(code='CS11033',value=233)
     Y.display()

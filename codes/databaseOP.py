@@ -3,7 +3,7 @@ import pymysql
 import fundation
 
 
-def DBconnect(hosts='localhost', username='root', password='root'):
+def DBconnect(hosts='localhost',*, username='root', password='root'):
     try:
         pymysql.connect(host=hosts, user=username, passwd=password)
     except:
@@ -113,6 +113,7 @@ def getFund(database, code: str):
     from funds
     where code = \"""" + str(code) + "\";"
     # print(sql_select)
+    cursor.execute('use fundation;')
     try:
         cursor.execute(sql_select)
         row = cursor.fetchone()

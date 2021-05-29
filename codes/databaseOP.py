@@ -3,7 +3,7 @@ import pymysql
 import fundation
 
 
-def DBconnect(hosts='localhost', username='root', password='root'):
+def DBconnect(hosts='localhost',*, username='root', password='root'):
     try:
         pymysql.connect(host=hosts, user=username, passwd=password)
     except:
@@ -113,6 +113,7 @@ def getFund(database, code: str):
     from funds
     where code = \"""" + str(code) + "\";"
     # print(sql_select)
+    cursor.execute('use fundation;')
     try:
         cursor.execute(sql_select)
         row = cursor.fetchone()
@@ -125,13 +126,89 @@ def getFund(database, code: str):
     else:
         return fund2
 
+def getHistory(database, code: str, begin_time, end_time):
+    if type(database).__name__ != 'Connection':
+        return False
+    if begin_time > end_time:
+        return False
+    cursor = database.cursor()
+    sql_select = """
+    select *
+    from history
+    where code = \"""" + str(code) + "\" and day >= \"" + str(begin_time) + "\" and day <= \"" + str(end_time) + "\";"
+    #print(sql_select)
+    return_value = list()
+    try:
+        cursor.execute("USE fundation;")
+        cursor.execute(sql_select)
+        total = cursor.fetchall()
+        for row in total:
+            history2 = fundation.history(code=row[0], day=row[2], value=row[1])
+            return_value.append(history2)
+        # print(row)
+
+    except Exception:
+        database.rollback()
+        return False
+    else:
+        return return_value
+
+def checkFund(database, code: str):
+    if type(database).__name__ != 'Connection':
+        return False
+    cursor = database.cursor()
+    sql_select = """
+    select *
+    from funds
+    where code = \"""" + str(code) + "\";"
+    #print(sql_select)
+    try:
+        cursor.execute("USE fundation;")
+        cursor.execute(sql_select)
+        total = cursor.fetchall()
+        for line in total:
+            return True
+        return False
+    except Exception:
+        database.rollback()
+        return False
+    else:
+        return False
+
+def checkHistory(database, code:str, day):
+    if type(database).__name__ != 'Connection':
+        return False
+    cursor = database.cursor()
+    sql_select = """
+    select *
+    from history
+    where code = \"""" + str(code) + "\" and day = \"" + str(day) + "\";"
+    #print(sql_select)
+    try:
+        cursor.execute("USE fundation;")
+        cursor.execute(sql_select)
+        total = cursor.fetchall()
+        for line in total:
+            return True
+        return False
+        # print(row)
+    except Exception:
+        database.rollback()
+        return False
+    else:
+        return False
+
 
 if __name__ == '__main__':
     DB = DBconnect()
     print(DBinit(DB))
     fund1 = fundation.fund(code='1122')
-    history1 = fundation.history(code='1122')
+    history1 = fundation.history(code='1122', day='2000-01-01')
     print(addFund(DB, fund1))
     print(addHistory(DB, history1))
     fund2 = getFund(DB, "1122")
     fund2.display()
+    print(checkFund(DB, "1122"))
+    print(checkHistory(DB, "1122", "2000-01-01"))
+    history_set = getHistory(DB, "1122", '1999-10-12', '2009-12-30')
+    history_set[0].display()

@@ -12,11 +12,10 @@ qieman=['ZH001798','ZH012926','ZH039471','ZH010246','ZH006498','ZH000193','ZH009
 qieman.sort() 
 
 if __name__=='__main__':
-    with databaseOP.DBconnect(password='19260817') as DB, alive_bar(len(danjuan+qieman)) as bar:
+    with databaseOP.DBconnect(password='root') as DB, alive_bar(len(danjuan+qieman)) as bar:
         #databaseOP.DBinit(DB)
         for code in danjuan+qieman:
             databaseOP.addFund(DB,creeper.getFund(code))
             bar()
             for history in creeper.getHistory(code,10000):
                 databaseOP.addHistory(DB, history)
-        

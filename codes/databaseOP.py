@@ -232,7 +232,7 @@ def updateHistory(database, code:str, day, history1:fundation.history):
     set value = """ + str(history1.value) \
     +"""
     where code = \"""" + str(code) + "\" and day = \"" + str(day) + "\";"
-    print(update_sql)
+    #print(update_sql)
     try:
         for line in splitSql(update_sql):
             cursor.execute(line)
@@ -243,9 +243,31 @@ def updateHistory(database, code:str, day, history1:fundation.history):
     else:
         return True
 
+def getLatestDate(database, code:str):
+    if type(database).__name__ != 'Connection':
+        return False
+    cursor = database.cursor()
+    sql_select = """
+    select *
+    from history
+    where code = \"""" + str(code) + "\""\
+    +"\norder by day desc;"
+    #print(sql_select)
+    cursor.execute('use fundation;')
+    try:
+        cursor.execute(sql_select)
+        row = cursor.fetchone()
+        # print(row)
+        fund3 = fundation.history(code=row[0], day=row[2], value=row[1])
+    except Exception:
+        database.rollback()
+        return False
+    else:
+        return fund3.day
+
 if __name__ == '__main__':
     DB = DBconnect()
-    print(DBinit(DB))
+    #print(DBinit(DB))
     fund1 = fundation.fund(code='1122')
     history1 = fundation.history(code='1122', day='2000-01-01')
     print(addFund(DB, fund1))
@@ -260,3 +282,4 @@ if __name__ == '__main__':
     updateFund(DB, "1122", fund2)
     history2 = fundation.history(code='1122', day='2000-01-01', value= 10)
     updateHistory(DB, "1122", "2000-01-01", history2)
+    print(getLatestDate(DB, "CSI1029"))

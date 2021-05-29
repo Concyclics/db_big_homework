@@ -2,7 +2,7 @@
 import pymysql
 import fundation
 
-def DBconnect(hosts='localhost',username='root',password='19260817'):
+def DBconnect(hosts='localhost',username='root',password='root'):
     try: pymysql.connect(host=hosts,user=username,passwd=password)
     except :
         DB='link failed!'
@@ -36,7 +36,7 @@ def DBinit(database):
     create table history
     (
         code varchar(20),
-        value float not null check (value>0),
+        value float not null check (value>=0),
         day date,
         primary key(code,day),
         foreign key(code) references funds(code)
@@ -54,12 +54,55 @@ def DBinit(database):
     else:
         return True
     
-#def addFund():
+def addFund(database, fund1:fundation.fund):
+    if type(database).__name__!='Connection':
+        return False
+    cursor=database.cursor()
+    sql_insert= "(\"" + str(fund1.code) + "\", \"" + str(fund1.name) + "\", \"" + str(fund1.found_date)\
+                + "\", " + str(fund1.sharp_rate) + ", " + str(fund1.max_down)\
+                + ", " + str(fund1.volatility) + ");"
+    insert_sql="""
+         USE fundation;
+         INSERT INTO funds(CODE, NAME, FOUND_DATE, SHARP_RATE, MAX_DOWN, VOLATILITY)
+         VALUES""" + sql_insert
+   # print(insert_sql)
+    try:
+        for line in splitSql(insert_sql):
+            cursor.execute(line)
+            database.commit()
+    except Exception:
+        database.rollback()
+        return False
+    else:
+        return True
 
-#def addHistory():
+def addHistory(database, History1:fundation.history):
+    if type(database).__name__!='Connection':
+        return False
+    cursor=database.cursor()
+    sql_insert= "(\"" + str(History1.code) + "\", \"" + str(History1.day)\
+                + "\", " + str(History1.value) + ");"
+    insert_sql="""
+         USE fundation;
+         INSERT INTO history(CODE, DAY, VALUE) 
+         VALUES""" + sql_insert
+    print(insert_sql)
+    try:
+        for line in splitSql(insert_sql):
+            cursor.execute(line)
+            database.commit()
+    except Exception:
+        database.rollback()
+        return False
+    else:
+        return True
     
 
 
 if __name__=='__main__':
     DB=DBconnect()
     print(DBinit(DB))
+    fund1 = fundation.fund(code='1122')
+    history1 = fundation.history(code='1122')
+    print(addFund(DB, fund1))
+    print(addHistory(DB, history1))

@@ -86,7 +86,7 @@ def addHistory(database, History1:fundation.history):
          USE fundation;
          INSERT INTO history(CODE, DAY, VALUE) 
          VALUES""" + sql_insert
-    print(insert_sql)
+    #print(insert_sql)
     try:
         for line in splitSql(insert_sql):
             cursor.execute(line)
@@ -96,7 +96,26 @@ def addHistory(database, History1:fundation.history):
         return False
     else:
         return True
-    
+
+def getFund(database, code:str):
+    if type(database).__name__!='Connection':
+        return False
+    cursor=database.cursor()
+    sql_select = """
+    select *
+    from funds
+    where code = \"""" + str(code) + "\";"
+    #print(sql_select)
+    try:
+        cursor.execute(sql_select)
+        row = cursor.fetchone()
+        #print(row)
+        fund2 = fundation.fund(code=row[0],name=row[1],found_date=row[2],sharp_rate=row[3],max_down=row[4],volatility=row[5])
+    except Exception:
+        database.rollback()
+        return False
+    else:
+        return fund2
 
 
 if __name__=='__main__':
@@ -106,3 +125,5 @@ if __name__=='__main__':
     history1 = fundation.history(code='1122')
     print(addFund(DB, fund1))
     print(addHistory(DB, history1))
+    fund2 = getFund(DB, "1122")
+    fund2.display()

@@ -2,7 +2,7 @@
 import pymysql
 import fundation
 
-def DBconnect(hosts='localhost',username='root',password='root'):
+def DBconnect(hosts='localhost',username='root',password='19260817'):
     try: pymysql.connect(host=hosts,user=username,passwd=password)
     except :
         DB='link failed!'
@@ -86,7 +86,6 @@ def addHistory(database, History1:fundation.history):
          USE fundation;
          INSERT INTO history(CODE, DAY, VALUE) 
          VALUES""" + sql_insert
-    print(insert_sql)
     try:
         for line in splitSql(insert_sql):
             cursor.execute(line)

@@ -263,7 +263,7 @@ def getLatestDate(database, code:str):
         database.rollback()
         return False
     else:
-        return fund3.day
+        return str(fund3.day)
 
 if __name__ == '__main__':
     DB = DBconnect()

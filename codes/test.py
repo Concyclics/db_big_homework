@@ -1,10 +1,10 @@
 #by concyclics
-#by concyclics
 import databaseOP
 import creeper
 import fundation
-
-
+from alive_progress import alive_bar
+import datetime
+import time
 
 danjuan=['CSI1033','CSI1032','CSI1038','CSI1029','CSI1006','CSI1065']
 danjuan.sort()
@@ -13,6 +13,19 @@ qieman=['ZH001798','ZH012926','ZH039471','ZH010246','ZH006498','ZH000193','ZH009
 qieman.sort() 
 
 if __name__=='__main__':
-    codes=danjuan+qieman
-    creeper.getFund(codes[14]).display()
-    creeper.getHistory(codes[14])
+    with databaseOP.DBconnect(password='19260817') as DB:
+        #databaseOP.DBinit(DB)
+        for code in danjuan+qieman:
+            databaseOP.addFund(DB,creeper.getFund(code))
+            #bar()
+            
+            last=databaseOP.getLatestDate(DB,code)
+            last=time.strptime(last,'%Y-%m-%d')
+            last=datetime.datetime(last[0],last[1],last[2])
+            today=time.localtime(time.time())
+            today=datetime.datetime(today[0],today[1],today[2])
+            diff=(today-last).days
+            
+            
+            for history in creeper.getHistory(code,diff):
+                databaseOP.addHistory(DB, history)

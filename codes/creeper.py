@@ -185,9 +185,12 @@ def getHistory(code,size=10):
         raise ValueError('请给size一个整数！')
         return 
     size=int(size)
-    if size<=0:
+    if size<0:
         raise ValueError('size要大于0！')
         return
+    
+    if size==0:
+        return []
     
     try:
         history=gethistory_danjuan(code,size)

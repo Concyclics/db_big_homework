@@ -20,7 +20,7 @@ qieman.sort()
 
 #x-sign记得每天更新
 header_for_qieman={
-'x-sign':'1622795473084EDCEEC19B864B0BFB19EAC7D0FB12963'
+'x-sign':'16230840092185EDD156880F723BB5D7E1AC69EB6A279' #2021-6-8
 }
 
 #获取当天信息
@@ -121,11 +121,20 @@ def getfund_qieman(code):
     
     
     maxdown=items.get("maxDrawdown")
-    maxdown=float(maxdown)
+    try:
+        maxdown=float(maxdown)
+    except TypeError:
+        raise ValueError('页面有误,请检查code')
     volatility=items.get("volatility")
-    volatility=float(volatility)
+    try:
+        volatility=float(volatility)
+    except TypeError:
+        raise ValueError('页面有误,请检查code')
     sharpe=items.get("sharpe")
-    sharpe=float(sharpe)
+    try:
+        sharpe=float(sharpe)
+    except TypeError:
+        raise ValueError('页面有误,请检查code')
     
     return fundation.fund(code=code,name=name,found_date=found,sharp_rate=sharpe,max_down=maxdown,volatility=volatility)
     
@@ -172,11 +181,13 @@ def gethistory_qieman(code,size=10000):
 
 def getFund(code):
     try:
-        fund=getfund_danjuan(code)
+        try:
+            fund=getfund_danjuan(code)
+        except ValueError:
+            fund=getfund_qieman(code)
+        return fund
     except ValueError:
-        fund=getfund_qieman(code)
-    
-    return fund
+        return False
 
 def getHistory(code,size=10):
     

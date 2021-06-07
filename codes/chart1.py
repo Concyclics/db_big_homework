@@ -10,6 +10,8 @@ import time
 import tkinter.font as tkFont
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 import databaseOP
+# import fundation
+import creeper
 
 datetime = calendar.datetime.datetime
 timedelta = calendar.datetime.timedelta
@@ -255,77 +257,219 @@ class Calendar:
     else:
       return False
 
-classicfund = ['CSI1033','CSI1032','CSI1038','CSI1029','CSI1006','CSI1065','ZH001798','ZH012926','ZH039471','ZH010246','ZH006498','ZH000193','ZH009664','ZH030684','ZH017252','ZH007973','ZH037807','ZH007974','ZH017409','ZH035411','ZH043108','ZH043126']
-classicfund.sort()
 
-fundINview = []
-str_start_date = '2010-01-01'
-str_end_date = time.strftime("%Y-%m-%d",time.localtime())
-codekey = {
-    'CSI1033':0,
-    'CSI1032':1,
-    'CSI1038':2,
-    'CSI1029':3,
-    'CSI1006':4,
-    'CSI1065':5,
-    'ZH001798':6,
-    'ZH012926':7,
-    'ZH039471':8,
-    'ZH010246':9,
-    'ZH006498':10,
-    'ZH000193':11,
-    'ZH009664':12,
-    'ZH030684':13,
-    'ZH017252':14,
-    'ZH007973':15,
-    'ZH037807':16,
-    'ZH007974':17,
-    'ZH017409':18,
-    'ZH035411':19,
-    'ZH043108':20,
-    'ZH043126':21
-}
-coderecord = []
-for i in range(len(classicfund)):
-    coderecord.append([])
+class Window: # 窗口类
+    originalfund = []
+    fundINview = []
+    codekey = {}
+    str_start_date = '2018-01-01'
+    str_end_date = time.strftime("%Y-%m-%d",time.localtime())
+    root = Tk()
+    coderecord = []
+    comvalue=StringVar()#窗体自带的文本，新建一个值
+    comboxlist=ttk.Combobox(root,textvariable=comvalue) 
 
-def getdata():
-    for code in classicfund:
-        while len(coderecord[codekey[code]]) > 1:
-            coderecord[codekey[code]].pop()
-        valuelist = []
-        x = []
-        y = []
-        # print(len(coderecord[codekey[code]]))
-        # print(coderecord[codekey[code]])
+    def __init__(s, master = None): #初始化
+        s.master = master
         with databaseOP.DBconnect(password='asd841123001%%') as DB:
-            if len(coderecord[codekey[code]]) < 1:
-                fund = databaseOP.getFund(DB,code)
+            codelist = databaseOP.getFundlist(DB)
+            for codeitem in codelist:
+                s.originalfund.append(codeitem[0])
+        for index,code in enumerate(s.originalfund):
+              s.codekey[code] = index
+        for i in range(len(s.originalfund)):
+            s.coderecord.append([])
+        s.getdata()
+        s.root.title('投资组合比较器')
+        s.root['bg'] = '#000033'
+        screenwidth = s.root.winfo_screenwidth() 
+        screenheight = s.root.winfo_screenheight()
+        alignstr = '%dx%d+%d+%d' % (screenwidth*0.7, screenheight*0.7, screenwidth*0.3/2, screenheight*0.3/2)
+        s.root.geometry(alignstr)
+        s.comboxlist["values"]=s.originalfund
+        s.comboxlist.current(0) #选择第一个
+        s.comboxlist.place(relx=0.5,rely=0.05,relwidth=0.4,relheight=0.05,anchor=CENTER)
+        
+        fm1 = Frame(s.root, bg='black', width=screenwidth*0.4, height=screenheight*0.4)
+        fm2 = Frame(s.root, bg='black', width=screenwidth*0.4, height=screenheight*0.3)
+        fm2.place(x=0,rely=0.29,relwidth=0.3,relheight=0.4,anchor=W)
+        fm1.place(relx=0.65,rely=0.53,relwidth=0.69,relheight=0.85,anchor=CENTER)
+
+        s.start_date=tk.StringVar() #开始日期
+        s.start_date.set(s.str_start_date)
+        s.end_date=tk.StringVar()	#结束日期
+        s.end_date.set(s.str_end_date)
+
+        s.chart = Chart(fm1)
+        s.treeview = s.tree(fm2)
+        confirm = Button(s.root,text = '确定',command=s.addGraph)
+        confirm.place(relx=0.75,rely=0.05,relwidth=0.07,relheight=0.05,anchor=CENTER)
+        #选择日期的按钮
+        startbutton = Button(s.root,text='选择开始日期',command=lambda:s.choosedate('start'))
+        startEntry=Entry(s.root,textvariable=s.start_date)	#开始输入框
+        endbutton = Button(s.root,text='选择结束日期',command=lambda:s.choosedate('end'))
+        endEntry=Entry(s.root,textvariable=s.end_date)	#结束输入框
+        verifybt=Button(s.root,text='确定',command=s.verify)
+        startbutton.place(relx=0.31,rely=1,relwidth=0.09,relheight=0.05,anchor=SW)
+        startEntry.place(relx=0.4,rely=1,relwidth=0.1,relheight=0.05,anchor=SW)
+        endbutton.place(relx=0.51,rely=1,relwidth=0.09,relheight=0.05,anchor=SW)
+        endEntry.place(relx=0.60,rely=1,relwidth=0.1,relheight=0.05,anchor=SW)
+        verifybt.place(relx=0.91,rely=1,relwidth=0.09,relheight=0.05,anchor=SW)
+
+        delbutton = Button(s.root,text='删除选中基金',command=s.cancelLine)
+        delallbutton = Button(s.root,text='删除所有选中基金',command=s.cancelallLine)
+        delbutton.place(relx=0,rely=0.51,relwidth=0.08,relheight=0.04,anchor=W)
+        delallbutton.place(relx=0.30,rely=0.51,relwidth=0.1,relheight=0.04,anchor=E)
+
+    def tree(s,master):
+        scrollBar = Scrollbar(master)
+        scrollBar.pack(side=RIGHT, fill=Y)
+        style=ttk.Style(master)
+        style.theme_use('clam')
+        style.configure('Treeview',background = 'blue',selectbackground = 'red',foreground='green',fieldbackground = 'black')
+        tree = ttk.Treeview(master,columns=['1','2','3','4'],show='headings',selectmode='extended',yscrollcommand=scrollBar.set)
+        tree.pack(side=TOP, fill=BOTH,expand=Y)
+        tree.column('1',width=85,anchor='center')
+        tree.column('2',width=20,anchor='center')
+        tree.column('3',width=25,anchor='center')
+        tree.column('4',width=40,anchor='center')
+        tree.heading('1',text='基金名称')
+        tree.heading('2',text='夏普率')
+        tree.heading('3',text='最大回撤')
+        tree.heading('4',text='年化波动率')
+        scrollBar.config(command=tree.yview)
+        return tree
+
+    def getdata(s):
+        for code in s.originalfund:
+            while len(s.coderecord[s.codekey[code]]) > 1:
+                s.coderecord[s.codekey[code]].pop()
+            valuelist = []
+            x = []
+            y = []
+            with databaseOP.DBconnect(password='asd841123001%%') as DB:
+                if len(s.coderecord[s.codekey[code]]) < 1:
+                    fund = databaseOP.getFund(DB,code)
+                    valuelist.append(fund.name)
+                    valuelist.append(fund.sharp_rate)
+                    valuelist.append(fund.max_down)
+                    valuelist.append(fund.volatility)
+                    s.coderecord[s.codekey[code]].append(valuelist)
+                for history in databaseOP.getHistory(DB,code,s.str_start_date,s.str_end_date):
+                    x.append(history.day)
+                    y.append(history.value)
+            s.coderecord[s.codekey[code]].append(x)
+            s.coderecord[s.codekey[code]].append(y)
+      
+    def addGraph(s):#增加选中记录
+        code = s.comboxlist.get()
+        if code == '':
+            return False
+        if code not in s.originalfund:
+            fund = creeper.getFund(code)
+            if fund == False: #code不正确
+                return fund
+            s.originalfund.append(code)
+            with databaseOP.DBconnect(password='asd841123001%%') as DB:
+                valuelist = []
+                x = []
+                y = []
+                databaseOP.addFund(DB,fund)
                 valuelist.append(fund.name)
                 valuelist.append(fund.sharp_rate)
                 valuelist.append(fund.max_down)
                 valuelist.append(fund.volatility)
-                coderecord[codekey[code]].append(valuelist)
-            for history in databaseOP.getHistory(DB,code,str_start_date,str_end_date):
-                x.append(history.day)
-                y.append(history.value)
-            coderecord[codekey[code]].append(x)
-            coderecord[codekey[code]].append(y)
-        # print(len(coderecord[codekey[code]]))
+                s.codekey[code] = len(s.codekey)
+                s.coderecord.append([])
+                s.coderecord[s.codekey[code]].append(valuelist)
+                historylist = creeper.getHistory(code,5000)
+                for history in historylist:
+                    databaseOP.addHistory(DB,history)
+                for history in databaseOP.getHistory(DB,code,s.str_start_date,s.str_end_date):
+                    x.append(history.day)
+                    y.append(history.value)
+                s.coderecord[s.codekey[code]].append(x)
+                s.coderecord[s.codekey[code]].append(y)
+        if code not in s.fundINview:
+            s.fundINview.append(code)
+            s.chart.addLine(s.coderecord[s.codekey[code]][1],s.coderecord[s.codekey[code]][2],s.coderecord[s.codekey[code]][0][0]) #valuelist
+            s.chart.showGraph()
+            s.treeview.insert('','end',values=s.coderecord[s.codekey[code]][0])
+
+    def cancelLine(s):#删除选中记录
+        if s.treeview.selection() != ():
+            j = i = 0
+            for item in s.treeview.get_children():
+                w = 0
+                for selected in s.treeview.selection():
+                    if item == selected:
+                        s.treeview.delete(item)
+                        s.chart.delLine(i)
+                        del s.fundINview[j]
+                        w = 1
+                        break
+                j += 1
+                if w == 0:
+                    i += 1
+            s.chart.showGraph()
+
+    def cancelallLine(s):#删除选中记录
+        for item in s.treeview.get_children():
+            s.treeview.delete(item)
+        for i in range(s.chart.linenum):
+            s.chart.delLine(0)
+        s.fundINview.clear()
+        plt.clf()
+        # 重新创建子图
+        f1 = plt.subplot(111)
+        f1.set_yticks(range(-6,6,1))#设置y轴的刻度范围
+        f2 = f1.twinx()
+        s.chart.graph[0] = f2
+        s.chart.graph[1] = f1
+        f2.set_yticks(range(0,5,1))#设置y轴的刻度范围
+        f1.spines['top'].set_visible(False)
+        f2.spines['top'].set_visible(False)
+        s.chart.showGraph()
+
+    def choosedate(s,type):
+        for date in [Calendar().selection()]:
+            if date:
+                if type=='start':	#如果是开始按钮，就赋值给开始日期
+                    s.start_date.set(date)
+                elif type=='end':
+                    s.end_date.set(date)
+
+    def verify(s):
+        sdate = s.start_date.get()
+        edate = s.end_date.get()
+        if sdate >= edate:
+            del sdate
+            del edate
+            return False
+        else:
+            s.str_start_date = sdate
+            s.str_end_date = edate
+            s.getdata()
+            if len(s.fundINview) == 0:
+                return False
+            else:
+                s.chart.clearGraph()
+                s.chart.showGraph()
+
+    def main(s):
+        s.root.mainloop()
 
 
 class Chart(Frame):
-    """一个经典的GUI写法"""
     linenum = 0
     linecolor = ['r','g','b','c','m','y','k','w']
     valuelines = []
+    vline = []
     percentlines = []
     graph = []
     linelabel = []
     view = 0
-
     def __init__(self, master=None):
-        '''初始化方法'''
         super().__init__(master)  # 调用父类的初始化方法
         self.master = master
         self.pack(side=TOP, fill=BOTH, expand=1)  # 此处填充父窗体
@@ -337,6 +481,7 @@ class Chart(Frame):
         self.button = Button(master=self.master,text='改变视图(净值图)',command=self.changeview)
         # 创建画布
         self.canvas = FigureCanvasTkAgg(figure, self)
+        self.canvas.mpl_connect('button_press_event', self.viewinfo)
         self.showGraph()
         self.button.place(relx=0,rely=0,relwidth=0.15,relheight=0.05,anchor=NW)
 
@@ -350,8 +495,6 @@ class Chart(Frame):
         else:
             self.button['text'] = '改变视图(净值图)'
         self.canvas.draw()
-        # self.canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
-        # self.canvas._tkcanvas.pack(side=TOP, fill=BOTH, expand=1)
         self.canvas.get_tk_widget().place(relx=0.5,rely=0.5,relwidth=1,relheight=1,anchor=CENTER)
         self.canvas._tkcanvas.place(relx=0.5,rely=0.5,relwidth=1,relheight=1,anchor=CENTER)
 
@@ -374,6 +517,16 @@ class Chart(Frame):
         fig2.spines['top'].set_visible(False)
         # .axis("off") #不显示坐标轴
 
+    def viewinfo(self,event):
+        if self.vline != []:
+            self.vline[0].set_alpha(0.0)
+            self.vline.clear()
+        fig = self.graph[0]
+        print(event.xdata)
+        vl = fig.axvline(x=event.xdata, color = "w", linestyle = "dashed")
+        self.vline.append(vl)
+        self.showGraph()
+            
 
     def changeview(self):
         self.view = 1 - self.view
@@ -413,21 +566,16 @@ class Chart(Frame):
             del self.valuelines[id]
             del self.percentlines[id]
             del self.linelabel[id]
-            # fig1 = plt.subplot(111)
             # plt.legend(self.linelabel,frameon=False)
             self.linenum -= 1
         else:
             print('out of range')
 
-    def clearGraph(self):
+    def clearGraph(self,fundINview,coderecord,codekey):
         for i in range(self.linenum):
-              self.delLine(0)
-        # print(self.linenum)
-        # for gra in self.graph:
-        #       del gra
+            self.delLine(0)
         self.showGraph()
         plt.clf()
-        print(self.graph)
         # 重新创建子图
         f1 = plt.subplot(111)
         f1.set_yticks(range(-6,6,1))#设置y轴的刻度范围
@@ -437,148 +585,14 @@ class Chart(Frame):
         f2.set_yticks(range(0,5,1))#设置y轴的刻度范围
         f1.spines['top'].set_visible(False)
         f2.spines['top'].set_visible(False)
-        # self.canvas = FigureCanvasTkAgg(self.figure, self)
-        # print(self.graph)
         self.showGraph()
         for code in fundINview:
-              # print(coderecord[codekey[code]][0][0])
-              self.addLine(coderecord[codekey[code]][1],coderecord[codekey[code]][2],coderecord[codekey[code]][0][0]) #valuelist
+            self.addLine(coderecord[codekey[code]][1],coderecord[codekey[code]][2],coderecord[codekey[code]][0][0]) #valuelist
 
     def destroy(self):
         """重写destroy方法"""
         super().destroy()
-        quit()
-
-    def quit():
-        """点击退出按钮时调用这个函数"""
-        root.quit()  # 结束主循环
-        root.destroy()  # 销毁窗口
-
-
-def tree(master):
-    scrollBar = Scrollbar(master)
-    scrollBar.pack(side=RIGHT, fill=Y)
-    style=ttk.Style(master)
-    style.theme_use('clam')
-    style.configure('Treeview',background = 'blue',selectbackground = 'red',foreground='green',fieldbackground = 'black')
-    tree = ttk.Treeview(master,columns=['1','2','3','4'],show='headings',selectmode='extended',yscrollcommand=scrollBar.set)
-    tree.pack(side=TOP, fill=BOTH,expand=Y)
-    tree.column('1',width=85,anchor='center')
-    tree.column('2',width=20,anchor='center')
-    tree.column('3',width=25,anchor='center')
-    tree.column('4',width=40,anchor='center')
-    tree.heading('1',text='基金名称')
-    tree.heading('2',text='夏普率')
-    tree.heading('3',text='最大回撤')
-    tree.heading('4',text='年化波动率')
-    scrollBar.config(command=tree.yview)
-    return tree
-
-def addGraph(Chart,Treeview):#增加选中记录
-    code = comboxlist.get()
-    if code not in fundINview:
-        fundINview.append(code) #增加所选记录
-        Chart.addLine(coderecord[codekey[code]][1],coderecord[codekey[code]][2],coderecord[codekey[code]][0][0]) #valuelist
-        Chart.showGraph()
-        Treeview.insert('','end',values=coderecord[codekey[code]][0])
-
-def cancelLine(Chart,Treeview):#删除选中记录
-    if Treeview.selection() != ():
-        j = i = 0
-        for item in Treeview.get_children():
-            w = 0
-            for selected in Treeview.selection():
-                if item == selected:
-                    Treeview.delete(item)
-                    Chart.delLine(i)
-                    del fundINview[j]
-                    w = 1
-                    break
-            j += 1
-            if w == 0:
-                i += 1
-        Chart.showGraph()
-
-def choosedate(type):
-    for date in [Calendar().selection()]:
-        if date:
-            if type=='start':	#如果是开始按钮，就赋值给开始日期
-                start_date.set(date)
-            elif type=='end':
-                end_date.set(date)
-
-def verify(Chart):
-    sdate = start_date.get()
-    edate = end_date.get()
-    if sdate >= edate:
-      del sdate
-      del edate
-      return False
-    else:
-      global str_start_date
-      str_start_date = sdate
-      global str_end_date
-      str_end_date = edate
-      getdata()
-      if len(fundINview) == 0:
-        return False
-      else:
-        Chart.clearGraph()
-        Chart.showGraph()
-
-      
 
 if __name__ == '__main__':
-    getdata()
-    root = Tk()
-    root.title('投资组合比较器')
-    root['bg'] = '#000033'
-    screenwidth = root.winfo_screenwidth() 
-    screenheight = root.winfo_screenheight()
-    alignstr = '%dx%d+%d+%d' % (screenwidth*0.7, screenheight*0.7, screenwidth*0.3/2, screenheight*0.3/2)
-    root.geometry(alignstr)
-    comvalue=StringVar()#窗体自带的文本，新建一个值
-    comboxlist=ttk.Combobox(root,textvariable=comvalue) #初始化
-    comboxlist["values"]=classicfund
-    comboxlist.current(0) #选择第一个
-    comboxlist.place(relx=0.5,rely=0.05,relwidth=0.4,relheight=0.05,anchor=CENTER)
-    
-    fm1 = Frame(root, bg='black', width=screenwidth*0.4, height=screenheight*0.4)
-    fm2 = Frame(root, bg='black', width=screenwidth*0.4, height=screenheight*0.3)
-    fm2.place(x=0,rely=0.29,relwidth=0.3,relheight=0.4,anchor=W)
-    fm1.place(relx=0.65,rely=0.53,relwidth=0.69,relheight=0.85,anchor=CENTER)
-    fundinfo = ['螺丝钉主动优选组合','3.14','0.99','0.21']
-
-    x1 = ['2000','2001','2002','2003','2004','2005','2006','2007','2008', '2009',
-    '2010','2011','2012','2013','2014','2015','2016','2017','2018', '2019', '2020', '2021', '2022']
-    y = [1,3,0.95,1.47,3,1,3,4,2.98,3,1,3,0.95,1.47,3,1,3,4,2.98,3,3,1.25,0.124]
-    y1 = [1,0,0.95,1.47,3,1,2.5,3.8,2.98,3,1,3,0.95,1.47,3,1,-2,4,2.98,3,3,1.25,0.124]
-    fundname = '无敌基金'
-
-    start_date=tk.StringVar() #开始日期
-    start_date.set(str_start_date)
-    end_date=tk.StringVar()	#结束日期
-    end_date.set(str_end_date)
-
-    chart = Chart(fm1)
-    t = tree(fm2)
-    confirm = Button(root,text = '确定',command=lambda:addGraph(chart,t))
-    confirm.place(relx=0.75,rely=0.05,relwidth=0.07,relheight=0.05,anchor=CENTER)
-
-    #选择日期的按钮
-    startbutton = Button(root,text='选择开始日期',command=lambda:choosedate('start'))
-    startEntry=Entry(root,textvariable=start_date)	#开始输入框
-    endbutton = Button(root,text='选择结束日期',command=lambda:choosedate('end'))
-    endEntry=Entry(root,textvariable=end_date)	#结束输入框
-    verifybt=Button(root,text='确定',command=lambda:verify(chart))
-    startbutton.place(relx=0.31,rely=1,relwidth=0.09,relheight=0.05,anchor=SW)
-    startEntry.place(relx=0.4,rely=1,relwidth=0.1,relheight=0.05,anchor=SW)
-    endbutton.place(relx=0.51,rely=1,relwidth=0.09,relheight=0.05,anchor=SW)
-    endEntry.place(relx=0.60,rely=1,relwidth=0.1,relheight=0.05,anchor=SW)
-    verifybt.place(relx=0.91,rely=1,relwidth=0.09,relheight=0.05,anchor=SW)
-
-    delbutton = Button(root,text='删除选中基金',command=lambda:cancelLine(chart,t))
-    delbutton.place(relx=0.15,rely=0.51,relwidth=0.08,relheight=0.04,anchor=CENTER)
-    # delbutton.pack(side=BOTTOM,anchor=S)
-    #主窗口进入循环
-    root.mainloop()
+    win = Window()
+    win.main() #直接调用

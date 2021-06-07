@@ -153,6 +153,31 @@ def getHistory(database, code: str, begin_time, end_time):
     else:
         return return_value
 
+
+def getFundlist(database):
+    if type(database).__name__ != 'Connection':
+        return False
+    cursor = database.cursor()
+    sql_select = """
+    select code
+    from funds;"""
+    #print(sql_select)
+    cursor.execute('use fundation;')
+    return_value = list();
+    try:
+        cursor.execute(sql_select)
+        total = cursor.fetchall()
+        for row in total:
+            temp = row;
+            return_value.append(temp)
+        # print(row）
+
+    except Exception:
+        database.rollback()
+        return False
+    else:
+        return return_value
+
 def checkFund(database, code: str):
     if type(database).__name__ != 'Connection':
         return False
@@ -283,3 +308,4 @@ if __name__ == '__main__':
     history2 = fundation.history(code='1122', day='2000-01-01', value= 10)
     updateHistory(DB, "1122", "2000-01-01", history2)
     print(getLatestDate(DB, "CSI1029"))
+    print(getFundlist(DB));

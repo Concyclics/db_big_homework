@@ -271,7 +271,7 @@ class Window: # 窗口类
 
     def __init__(s, master = None): #初始化
         s.master = master
-        with databaseOP.DBconnect(password='asd841123001%%') as DB:
+        with databaseOP.DBconnect(password='19260817') as DB:
             codelist = databaseOP.getFundlist(DB)
             for codeitem in codelist:
                 s.originalfund.append(codeitem[0])
@@ -347,7 +347,7 @@ class Window: # 窗口类
             valuelist = []
             x = []
             y = []
-            with databaseOP.DBconnect(password='asd841123001%%') as DB:
+            with databaseOP.DBconnect(password='19260817') as DB:
                 if len(s.coderecord[s.codekey[code]]) < 1:
                     fund = databaseOP.getFund(DB,code)
                     valuelist.append(fund.name)
@@ -370,7 +370,7 @@ class Window: # 窗口类
             if fund == False: #code不正确
                 return fund
             s.originalfund.append(code)
-            with databaseOP.DBconnect(password='asd841123001%%') as DB:
+            with databaseOP.DBconnect(password='19260817') as DB:
                 valuelist = []
                 x = []
                 y = []

@@ -291,21 +291,27 @@ for i in range(len(classicfund)):
 
 def getdata():
     for code in classicfund:
+        while len(coderecord[codekey[code]]) > 1:
+            coderecord[codekey[code]].pop()
         valuelist = []
         x = []
         y = []
+        # print(len(coderecord[codekey[code]]))
+        # print(coderecord[codekey[code]])
         with databaseOP.DBconnect(password='asd841123001%%') as DB:
-            fund = databaseOP.getFund(DB,code)
-            valuelist.append(fund.name)
-            valuelist.append(fund.sharp_rate)
-            valuelist.append(fund.max_down)
-            valuelist.append(fund.volatility)
+            if len(coderecord[codekey[code]]) < 1:
+                fund = databaseOP.getFund(DB,code)
+                valuelist.append(fund.name)
+                valuelist.append(fund.sharp_rate)
+                valuelist.append(fund.max_down)
+                valuelist.append(fund.volatility)
+                coderecord[codekey[code]].append(valuelist)
             for history in databaseOP.getHistory(DB,code,str_start_date,str_end_date):
                 x.append(history.day)
                 y.append(history.value)
-        coderecord[codekey[code]].append(valuelist)
-        coderecord[codekey[code]].append(x)
-        coderecord[codekey[code]].append(y)
+            coderecord[codekey[code]].append(x)
+            coderecord[codekey[code]].append(y)
+        # print(len(coderecord[codekey[code]]))
 
 
 class Chart(Frame):
@@ -359,11 +365,11 @@ class Chart(Frame):
         self.figure = plt.figure(num=2, figsize=(10, 5), dpi=80,facecolor='black', edgecolor='black', frameon=True)
         # 创建一副子图
         fig1 = plt.subplot(111)
-        fig1.set_yticks(range(0,6,1))#设置y轴的刻度范围
-        self.graph.append(fig1)
+        fig1.set_yticks(range(-6,6,1))#设置y轴的刻度范围
         fig2 = fig1.twinx()
         self.graph.append(fig2)
-        fig2.set_yticks(range(-6,6,1))#设置y轴的刻度范围
+        self.graph.append(fig1)
+        fig2.set_yticks(range(0,5,1))#设置y轴的刻度范围
         fig1.spines['top'].set_visible(False)
         fig2.spines['top'].set_visible(False)
         # .axis("off") #不显示坐标轴
@@ -395,7 +401,6 @@ class Chart(Frame):
         self.percentlines.append(percentline)
         self.linelabel.append(name)
         self.linenum += 1
-        self.showGraph()
 
     def delLine(self,id):
         if self.linenum >= 1 and id < self.linenum:
@@ -411,10 +416,33 @@ class Chart(Frame):
             # fig1 = plt.subplot(111)
             # plt.legend(self.linelabel,frameon=False)
             self.linenum -= 1
-            self.showGraph()
         else:
             print('out of range')
 
+    def clearGraph(self):
+        for i in range(self.linenum):
+              self.delLine(0)
+        # print(self.linenum)
+        # for gra in self.graph:
+        #       del gra
+        self.showGraph()
+        plt.clf()
+        print(self.graph)
+        # 重新创建子图
+        f1 = plt.subplot(111)
+        f1.set_yticks(range(-6,6,1))#设置y轴的刻度范围
+        f2 = f1.twinx()
+        self.graph[0] = f2
+        self.graph[1] = f1
+        f2.set_yticks(range(0,5,1))#设置y轴的刻度范围
+        f1.spines['top'].set_visible(False)
+        f2.spines['top'].set_visible(False)
+        # self.canvas = FigureCanvasTkAgg(self.figure, self)
+        # print(self.graph)
+        self.showGraph()
+        for code in fundINview:
+              # print(coderecord[codekey[code]][0][0])
+              self.addLine(coderecord[codekey[code]][1],coderecord[codekey[code]][2],coderecord[codekey[code]][0][0]) #valuelist
 
     def destroy(self):
         """重写destroy方法"""
@@ -449,23 +477,27 @@ def tree(master):
 def addGraph(Chart,Treeview):#增加选中记录
     code = comboxlist.get()
     if code not in fundINview:
-        fundINview.append(comboxlist.get()) #增加所选记录
+        fundINview.append(code) #增加所选记录
         Chart.addLine(coderecord[codekey[code]][1],coderecord[codekey[code]][2],coderecord[codekey[code]][0][0]) #valuelist
+        Chart.showGraph()
         Treeview.insert('','end',values=coderecord[codekey[code]][0])
 
 def cancelLine(Chart,Treeview):#删除选中记录
     if Treeview.selection() != ():
+        j = i = 0
         for item in Treeview.get_children():
-            i = 0
             w = 0
             for selected in Treeview.selection():
                 if item == selected:
                     Treeview.delete(item)
                     Chart.delLine(i)
+                    del fundINview[j]
                     w = 1
                     break
+            j += 1
             if w == 0:
                 i += 1
+        Chart.showGraph()
 
 def choosedate(type):
     for date in [Calendar().selection()]:
@@ -479,6 +511,8 @@ def verify(Chart):
     sdate = start_date.get()
     edate = end_date.get()
     if sdate >= edate:
+      del sdate
+      del edate
       return False
     else:
       global str_start_date
@@ -486,7 +520,11 @@ def verify(Chart):
       global str_end_date
       str_end_date = edate
       getdata()
-      Chart.showGraph()
+      if len(fundINview) == 0:
+        return False
+      else:
+        Chart.clearGraph()
+        Chart.showGraph()
 
       
 

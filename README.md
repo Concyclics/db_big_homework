@@ -1,10 +1,31 @@
-# DB_big_homework
+# DB_ big _homework
 
 #### 介绍
 陈涵, 廖宇延, 梁永豪的数据库实训大作业。
 
-#### 软件架构
-软件架构说明
+#### 环境
+1. python 3.8
+2. MySQL 8.0
+
+
+#### 文件
+
+##### 代码
+1. [codes/main.py](codes/main.py)
+2. [codes/creeper.py](codes/creeper.py)
+3. [codes/fundation.py](codes/fundation.py)
+4. [codes/databaseOP.py](codes/databaseOP.py)
+5. [codes/chart1.py](codes/chart1.py)
+
+##### 文档
+1. [第一次中期检查](documents/6.7 第一次中期检查.docx)
+2. [第二次中期检查](documents/6.18 第二次中期检查.docx)
+
+##### 图例
+1. [E-R图](schemas/E-R.png)
+
+####reqirements
+[reqirements.txt](codes/reqirements.txt)
 
 
 #### 安装教程
@@ -15,9 +36,8 @@
 
 #### 使用说明
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+1.  打开MySQL服务
+2.  运行 codes/main.py
 
 #### 参与贡献
 

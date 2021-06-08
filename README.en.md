@@ -1,10 +1,33 @@
-# DB_big_homework
+# DB_ big _homework
 
 #### Description
-陈涵, 廖宇延, 梁永豪的数据库实训大作业。
+陈涵, 廖宇延, 梁永豪's Database System Concept Big Homework
 
 #### Software Architecture
 Software architecture description
+
+#### Environments
+1. python3.8
+2. MySQL8.0
+
+#### Files
+
+##### codes
+1. [codes/main.py](codes/main.py)
+2. [codes/creeper.py](codes/creeper.py)
+3. [codes/fundation.py](codes/fundation.py)
+4. [codes/databaseOP.py](codes/databaseOP.py)
+5. [codes/chart1.py](codes/chart1.py)
+
+##### documents
+1. [第一次中期检查](documents/6.7 第一次中期检查.docx)
+2. [第二次中期检查](documents/6.18 第二次中期检查.docx)
+
+##### schemas
+1. [E-R图](schemas/E-R.png)
+
+####requirements
+[reqirements.txt](codes/reqirements.txt)
 
 #### Installation
 
@@ -14,9 +37,8 @@ Software architecture description
 
 #### Instructions
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+1.  open MySQL service
+2.  run codes/main.py
 
 #### Contribution
 

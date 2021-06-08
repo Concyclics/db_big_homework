@@ -39,7 +39,7 @@ if __name__=='__main__':
         databaseOP.DBinit(DB)
         print("数据库不存在，正重新创建")
     
-    databaseOP.update(DB)
+    databaseOP.updateALL(DB)
                 
     win = chart1.Window()
     win.main()

@@ -1,6 +1,9 @@
 # by concyclics
 import pymysql
 import fundation
+import creeper
+import time
+import datetime
 
 #链接数据库
 def DBconnect(hosts='localhost',*, username='root', password='19260817'):
@@ -74,6 +77,48 @@ def DBinit(database):
     else:
         return True
 
+
+def updateALL(DB):
+    
+    for code in getFundlist(DB):
+        code=code[0]
+        
+        tmp=creeper.getFund(code)
+        if addFund(DB,tmp)==False:
+            updateFund(DB,code,tmp)
+            
+        last=getLatestDate(DB,code)
+        if last == False:
+            diff=10000
+        else:
+            last=time.strptime(last,'%Y-%m-%d')
+            last=datetime.datetime(last[0],last[1],last[2])
+            today=time.localtime(time.time())
+            today=datetime.datetime(today[0],today[1],today[2])
+            diff=(today-last).days
+            
+        for history in creeper.getHistory(code,diff):
+            addHistory(DB, history)
+            
+            
+def updateFundInfo(DB,code:str):
+        
+    tmp=creeper.getFund(code)
+    if addFund(DB,tmp)==False:
+        updateFund(DB,code,tmp)
+            
+    last=getLatestDate(DB,code)
+    if last == False:
+        diff=10000
+    else:
+        last=time.strptime(last,'%Y-%m-%d')
+        last=datetime.datetime(last[0],last[1],last[2])
+        today=time.localtime(time.time())
+        today=datetime.datetime(today[0],today[1],today[2])
+        diff=(today-last).days
+        
+    for history in creeper.getHistory(code,diff):
+        addHistory(DB, history)
 
 def addFund(database, fund1: fundation.fund):
     if type(database).__name__ != 'Connection':
@@ -309,21 +354,24 @@ def getLatestDate(database, code:str):
 if __name__ == '__main__':
     DB = DBconnect()
     #print(DBinit(DB))
+    updateFundInfo(DB,'CSI1029')
+    print("OK")
+    updateALL(DB)
     print(DBexist(DB))
-    fund1 = fundation.fund(code='1122')
-    history1 = fundation.history(code='1122', day='2000-01-01')
-    print(addFund(DB, fund1))
-    print(addHistory(DB, history1))
-    fund2 = getFund(DB, "1122")
-    fund2.display()
-    print(checkFund(DB, "1122"))
-    print(checkHistory(DB, "1122", "2000-01-01"))
-    history_set = getHistory(DB, "1122", '1999-10-12', '2009-12-30')
-    history_set[0].display()
-    fund2 = fundation.fund(code='1122', name="nishizhu", found_date="2001-11-16", sharp_rate=1.0, max_down=9.0, volatility=9)
-    updateFund(DB, "1122", fund2)
-    history2 = fundation.history(code='1122', day='2000-01-01', value= 10)
-    updateHistory(DB, "1122", "2000-01-01", history2)
-    print(getLatestDate(DB, "CSI1029"))
-    print(getFundlist(DB));
-    
+#    fund1 = fundation.fund(code='1122')
+#    history1 = fundation.history(code='1122', day='2000-01-01')
+#    print(addFund(DB, fund1))
+#    print(addHistory(DB, history1))
+#    fund2 = getFund(DB, "1122")
+#    fund2.display()
+#    print(checkFund(DB, "1122"))
+#    print(checkHistory(DB, "1122", "2000-01-01"))
+#    history_set = getHistory(DB, "1122", '1999-10-12', '2009-12-30')
+#    history_set[0].display()
+#    fund2 = fundation.fund(code='1122', name="nishizhu", found_date="2001-11-16", sharp_rate=1.0, max_down=9.0, volatility=9)
+#    updateFund(DB, "1122", fund2)
+#    history2 = fundation.history(code='1122', day='2000-01-01', value= 10)
+#    updateHistory(DB, "1122", "2000-01-01", history2)
+#    print(getLatestDate(DB, "CSI1029"))
+#    print(getFundlist(DB));
+#    

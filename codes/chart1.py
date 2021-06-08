@@ -257,7 +257,6 @@ class Calendar:
     else:
       return False
 
-
 class Window: # 窗口类
     originalfund = []
     fundINview = []
@@ -281,6 +280,7 @@ class Window: # 窗口类
             s.coderecord.append([])
         s.getdata()
         s.root.title('投资组合比较器')
+        s.root.protocol("WM_DELETE_WINDOW", s.destroy)
         s.root['bg'] = '#000033'
         screenwidth = s.root.winfo_screenwidth() 
         screenheight = s.root.winfo_screenheight()
@@ -320,6 +320,13 @@ class Window: # 窗口类
         delallbutton = Button(s.root,text='删除所有选中基金',command=s.cancelallLine)
         delbutton.place(relx=0,rely=0.51,relwidth=0.08,relheight=0.04,anchor=W)
         delallbutton.place(relx=0.30,rely=0.51,relwidth=0.1,relheight=0.04,anchor=E)
+
+    def destroy(s):
+        s.__del__()
+
+    def __del__(s):
+        s.root.quit()
+        s.root.destroy()
 
     def tree(s,master):
         scrollBar = Scrollbar(master)
@@ -458,7 +465,7 @@ class Window: # 窗口类
 
     def main(s):
         s.root.mainloop()
-
+        
 
 class Chart(Frame):
     linenum = 0
@@ -537,7 +544,7 @@ class Chart(Frame):
         for index in range(len(yy)):
             if index >= 1:
                 if yy[index-1] != 0:
-                    t = 100.0*((yy[index]-yy[index-1])/yy[index-1])
+                    t = ((yy[index]-yy[index-1])/yy[index-1])
                 else:
                     t = 0
                 tmp.append(1.0*t)

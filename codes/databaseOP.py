@@ -48,7 +48,12 @@ def DBinit(database):
             on update cascade
     );
     delete from funds;
-    delete from history;"""
+    delete from historys;
+    create index code_ind on funds(code);
+    create index code_ind on history(code);
+    create index value_ind on history(value);
+    create index day_ind on history(day);
+    """
     try:
         for line in splitSql(reset_sql):
             cursor.execute(line)
@@ -309,3 +314,4 @@ if __name__ == '__main__':
     updateHistory(DB, "1122", "2000-01-01", history2)
     print(getLatestDate(DB, "CSI1029"))
     print(getFundlist(DB));
+    

@@ -34,11 +34,8 @@ create table historys
 delete from funds;
 delete from historys;
 
-#insert funds
-#['CSI1033','CSI1032','CSI1038','CSI1029','CSI1006','CSI1065']
-insert into funds values('CSI1033');
-insert into funds values('CSI1032');
-insert into funds values('CSI1038');
-insert into funds values('CSI1029');
-insert into funds values('CSI1006');
-insert into funds values('CSI1065');
+#index
+create index code_ind on funds(code);
+create index code_ind on history(code);
+create index value_ind on history(value);
+create index day_ind on history(day);

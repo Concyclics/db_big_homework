@@ -13,6 +13,7 @@ Software architecture description
 #### Files
 
 ##### codes
+
 1. [codes/main.py](codes/main.py)
 2. [codes/creeper.py](codes/creeper.py)
 3. [codes/fundation.py](codes/fundation.py)
@@ -20,13 +21,16 @@ Software architecture description
 5. [codes/chart1.py](codes/chart1.py)
 
 ##### documents
+
 1. [第一次中期检查](documents/6.7 第一次中期检查.docx)
 2. [第二次中期检查](documents/6.18 第二次中期检查.docx)
 
 ##### schemas
+
 1. [E-R图](schemas/E-R.png)
 
 ####requirements
+
 [reqirements.txt](codes/reqirements.txt)
 
 #### Installation

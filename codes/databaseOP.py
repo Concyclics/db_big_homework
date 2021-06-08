@@ -2,23 +2,34 @@
 import pymysql
 import fundation
 
-
-def DBconnect(hosts='localhost',*, username='root', password='root'):
+#链接数据库
+def DBconnect(hosts='localhost',*, username='root', password='19260817'):
     try:
         pymysql.connect(host=hosts, user=username, passwd=password)
     except:
-        DB = 'link failed!'
         return False
     else:
         database = pymysql.connect(host=hosts, user=username, passwd=password)
         return database
 
 
+#sql命令分段
 def splitSql(sql: str):
     sqllist = sql.split(';')
     return sqllist[0:-1]
 
 
+#检测数据库是否存在
+def DBexist(database):
+    cursor = database.cursor()
+    try:
+        cursor.execute("USE fundation;")
+    except Exception:
+        return False
+    
+    return True
+
+#数据库初始化
 def DBinit(database):
     if type(database).__name__ != 'Connection':
         return False
@@ -298,6 +309,7 @@ def getLatestDate(database, code:str):
 if __name__ == '__main__':
     DB = DBconnect()
     #print(DBinit(DB))
+    print(DBexist(DB))
     fund1 = fundation.fund(code='1122')
     history1 = fundation.history(code='1122', day='2000-01-01')
     print(addFund(DB, fund1))

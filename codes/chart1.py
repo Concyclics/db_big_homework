@@ -461,11 +461,12 @@ class Window: # 窗口类
     def cancelLine(s):#删除选中记录
         if s.treeview.selection() != ():
             j = i = 0
-            for item in s.treeview.get_children():
+            for index,item in enumerate(s.treeview.get_children()):
                 w = 0
                 for selected in s.treeview.selection():
                     if item == selected:
                         s.treeview.delete(item)
+                        s.detail.delete(s.detail.get_children()[index])
                         s.chart.delLine(i)
                         del s.fundINview[j]
                         w = 1
@@ -482,10 +483,14 @@ class Window: # 窗口类
         # 重新创建子图
         f1 = plt.subplot(111)
         f1.set_yticks(range(-6,6,1))#设置y轴的刻度范围
+        plt.yticks([-5,-4,-3,-2,-1,0,1,2,3,4,5],['-5%','-4%','-3%','-2%','-1%','0%','1%','2%','3%','4%','5%'])
+        plt.xlabel('日期')
+        plt.ylabel('涨幅百分比')
         f2 = f1.twinx()
         s.chart.graph[0] = f2
         s.chart.graph[1] = f1
         f2.set_yticks(range(0,5,1))#设置y轴的刻度范围
+        plt.ylabel('净值')
         f1.spines['top'].set_visible(False)
         f2.spines['top'].set_visible(False)
         for child in s.detail.get_children(): #清除表格
@@ -504,9 +509,13 @@ class Window: # 窗口类
         # 重新创建子图
         f1 = plt.subplot(111)
         f1.set_yticks(range(-6,6,1))#设置y轴的刻度范围
+        plt.yticks([-5,-4,-3,-2,-1,0,1,2,3,4,5],['-5%','-4%','-3%','-2%','-1%','0%','1%','2%','3%','4%','5%'])
+        plt.xlabel('日期')
+        plt.ylabel('涨幅百分比')
         f2 = f1.twinx()
         s.chart.graph[0] = f2
         s.chart.graph[1] = f1
+        plt.ylabel('净值')
         f2.set_yticks(range(0,5,1))#设置y轴的刻度范围
         f1.spines['top'].set_visible(False)
         f2.spines['top'].set_visible(False)
@@ -576,10 +585,16 @@ class Chart(Frame):
             vline[0].set_alpha(1.0*(1 - self.view))
         for pline in self.percentlines:
             pline[0].set_alpha(1.0*self.view)
+        fig1 = self.graph[0]
+        fig2 = self.graph[1]
         if self.view:
             self.button['text'] = '改变视图(比例图)'
+            # fig1.spines['right'].set_visible(False)
+            # fig2.spines['right'].set_visible(False)
         else:
             self.button['text'] = '改变视图(净值图)'
+            # fig1.spines['left'].set_visible(False)
+            # fig2.spines['left'].set_visible(False)
         self.canvas.draw()
         self.canvas.get_tk_widget().place(relx=0.5,rely=0.5,relwidth=1,relheight=1,anchor=CENTER)
         self.canvas._tkcanvas.place(relx=0.5,rely=0.5,relwidth=1,relheight=1,anchor=CENTER)
@@ -595,9 +610,13 @@ class Chart(Frame):
         # 创建一副子图
         fig1 = plt.subplot(111)
         fig1.set_yticks(range(-6,6,1))#设置y轴的刻度范围
+        plt.yticks([-5,-4,-3,-2,-1,0,1,2,3,4,5],['-5%','-4%','-3%','-2%','-1%','0%','1%','2%','3%','4%','5%'])
+        plt.xlabel('日期')
+        plt.ylabel('涨幅百分比')
         fig2 = fig1.twinx()
         self.graph.append(fig2)
         self.graph.append(fig1)
+        plt.ylabel('净值')
         fig2.set_yticks(range(0,5,1))#设置y轴的刻度范围
         fig1.spines['top'].set_visible(False)
         fig2.spines['top'].set_visible(False)
@@ -615,7 +634,7 @@ class Chart(Frame):
                     t = 100.0*((yy[index]-yy[index-1])/yy[index-1])
                 else:
                     t = 0
-                tmp.append(1.0*t)
+                tmp.append(t)
         return tmp
         
     def addLine(self,dat,yy,percenty,name):
@@ -674,3 +693,7 @@ class Chart(Frame):
 if __name__ == '__main__':
     win = Window()
     win.main() #直接调用
+
+    #def connect(self,Window)
+    #connect  lambda:viewinfo(Window)
+    

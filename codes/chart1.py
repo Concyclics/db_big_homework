@@ -10,6 +10,7 @@ import time
 import datetime as dt
 import tkinter.font as tkFont
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+import fundation
 import databaseOP
 # import fundation
 import creeper
@@ -354,10 +355,6 @@ class Window: # 窗口类
             if s.chart.vline != []: #清除原有竖线
                 s.chart.vline[0].set_alpha(0.0)
                 s.chart.vline.clear()
-            # if s.chart.linelabel != []: #清除原有图例
-            #     for lb in s.chart.linelabel:
-            #         lb.set_text('')
-            #     s.chart.linelabel.clear()
             for child in s.detail.get_children(): #清除表格
                 s.detail.delete(child)
             fig = s.chart.graph[0]
@@ -370,10 +367,7 @@ class Window: # 窗口类
                     # print((x - s.coderecord[s.codekey[code]][1][0]).days,int(event.xdata+0.5) - (s.coderecord[s.codekey[code]][1][0] - dt.date(1970,1,1)).days)
                     strx = dt.datetime.strftime(x, '%Y-%m-%d')
                     if (x - s.coderecord[s.codekey[code]][1][0]).days == int(event.xdata+0.5) - (s.coderecord[s.codekey[code]][1][0] - dt.date(1970,1,1)).days:
-                        # label = plt.text(x, y, (strx,y),ha='center', va='top', fontsize=15)
-                        # print('show!')
                         s.detail.insert('','end',values=[s.coderecord[s.codekey[code]][0][0],strx,y,'%.2f'%z+'%'],tags=(s.chart.coloruse[index],))
-                        # s.chart.linelabel.append(label)
                         break
                     elif (x - s.coderecord[s.codekey[code]][1][0]).days > int(event.xdata+0.5) - (s.coderecord[s.codekey[code]][1][0] - dt.date(1970,1,1)).days:
                         s.detail.insert('','end',values=[s.coderecord[s.codekey[code]][0][0],strx,'null','null'],tags=(s.chart.coloruse[index],))
@@ -401,27 +395,33 @@ class Window: # 窗口类
         scrollBar.config(command=tree.yview)
         return tree
 
+    def getvaluelist(s,fund:fundation.fund,code):
+        valuelist = []
+        valuelist.append(fund.name)
+        valuelist.append('%.2f'%fund.sharp_rate+'%')
+        valuelist.append(fund.max_down)
+        valuelist.append('%.2f'%fund.volatility+'%')
+        s.coderecord[s.codekey[code]].append(valuelist)
+    
+    def gethistory(s,DB,code):
+        x = []
+        y = []
+        for history in databaseOP.getHistory(DB,code,s.str_start_date,s.str_end_date):
+            x.append(history.day)
+            y.append(history.value)
+        s.coderecord[s.codekey[code]].append(x)
+        s.coderecord[s.codekey[code]].append(y)
+        s.coderecord[s.codekey[code]].append(s.chart.calpercent(y))
+
     def getdata(s):
         for code in s.originalfund:
             while len(s.coderecord[s.codekey[code]]) > 1:
                 s.coderecord[s.codekey[code]].pop()
-            valuelist = []
-            x = []
-            y = []
             with databaseOP.DBconnect(password='19260817') as DB:
                 if len(s.coderecord[s.codekey[code]]) < 1:
                     fund = databaseOP.getFund(DB,code)
-                    valuelist.append(fund.name)
-                    valuelist.append(fund.sharp_rate)
-                    valuelist.append(fund.max_down)
-                    valuelist.append(fund.volatility)
-                    s.coderecord[s.codekey[code]].append(valuelist)
-                for history in databaseOP.getHistory(DB,code,s.str_start_date,s.str_end_date):
-                    x.append(history.day)
-                    y.append(history.value)
-            s.coderecord[s.codekey[code]].append(x)
-            s.coderecord[s.codekey[code]].append(y)
-            s.coderecord[s.codekey[code]].append(s.chart.calpercent(y))
+                    s.getvaluelist(fund,code)
+                s.gethistory(DB,code)
       
     def addGraph(s):#增加选中记录
         code = s.comboxlist.get() #选择框里的内容
@@ -437,26 +437,15 @@ class Window: # 窗口类
             s.originalfund.sort()
             s.comboxlist["values"]=s.originalfund
             with databaseOP.DBconnect(password='19260817') as DB:
-                valuelist = []
-                x = []
-                y = []
                 databaseOP.addFund(DB,fund)
-                valuelist.append(fund.name)
-                valuelist.append(fund.sharp_rate)
-                valuelist.append(fund.max_down)
-                valuelist.append(fund.volatility)
                 s.codekey[code] = len(s.codekey)
                 s.coderecord.append([])
-                s.coderecord[s.codekey[code]].append(valuelist)
+                s.getvaluelist(fund,code)
                 historylist = creeper.getHistory(code,5000)
                 for history in historylist:
                     databaseOP.addHistory(DB,history)
-                for history in databaseOP.getHistory(DB,code,s.str_start_date,s.str_end_date):
-                    x.append(history.day)
-                    y.append(history.value)
-                s.coderecord[s.codekey[code]].append(x)
-                s.coderecord[s.codekey[code]].append(y)
-                s.coderecord[s.codekey[code]].append(s.chart.calpercent(y))
+                s.gethistory(DB,code)
+                
         if code not in s.fundINview:
             s.fundINview.append(code)
             s.chart.addLine(s.coderecord[s.codekey[code]][1],s.coderecord[s.codekey[code]][2],s.coderecord[s.codekey[code]][3],s.coderecord[s.codekey[code]][0][0]) #valuelist
@@ -567,7 +556,6 @@ class Chart(Frame):
     vline = []
     percentlines = []
     graph = []
-    linelabel = []
     view = 0
     def __init__(self, master=None):
         super().__init__(master)  # 调用父类的初始化方法
@@ -591,8 +579,6 @@ class Chart(Frame):
             vline[0].set_alpha(1.0*(1 - self.view))
         for pline in self.percentlines:
             pline[0].set_alpha(1.0*self.view)
-        fig1 = self.graph[0]
-        fig2 = self.graph[1]
         if self.view:
             self.button['text'] = '改变视图(比例图)'
             # fig1.spines['right'].set_visible(False)
@@ -676,8 +662,6 @@ class Chart(Frame):
             del self.valuelines[id]
             del self.percentlines[id]
             del self.coloruse[id]
-            if self.linelabel != []:
-                del self.linelabel[id]
             for color in self.linecolor:
                 w = 0
                 for index,num in enumerate(self.linecoloruse[color]):
@@ -700,6 +684,3 @@ class Chart(Frame):
 if __name__ == '__main__':
     win = Window()
     win.main() #直接调用
-
-    #def connect(self,Window)
-    #connect  lambda:viewinfo(Window)

@@ -351,14 +351,13 @@ class Window: # 窗口类
         s.root.destroy()
 
     def viewinfo(s,event):
-        if s.chart.linenum != 0:
+        if s.chart.linenum != 0 and event.xdata != None:
             if s.chart.vline != []: #清除原有竖线
                 s.chart.vline[0].set_alpha(0.0)
                 s.chart.vline.clear()
             for child in s.detail.get_children(): #清除表格
                 s.detail.delete(child)
-            fig = s.chart.graph[0]
-            vl = fig.axvline(x=event.xdata, color = "w", linestyle = "dashed")
+            vl = plt.axvline(x=event.xdata, color = "w", linestyle = "dashed")
             s.chart.vline.append(vl)
             starttime=time.strptime(s.str_start_date,'%Y-%m-%d')
             starttime=dt.date(starttime[0],starttime[1],starttime[2])
@@ -461,7 +460,8 @@ class Window: # 窗口类
                 for selected in s.treeview.selection():
                     if item == selected:
                         s.treeview.delete(item)
-                        s.detail.delete(s.detail.get_children()[index])
+                        if s.detail.get_children() != ():
+                            s.detail.delete(s.detail.get_children()[index])
                         s.chart.delLine(i)
                         del s.fundINview[j]
                         w = 1
@@ -478,8 +478,7 @@ class Window: # 窗口类
         # 重新创建子图
         f1 = plt.subplot(111)
         f1.set_yticks(range(-6,6,1))#设置y轴的刻度范围
-        plt.yticks([-5,-4,-3,-2,-1,0,1,2,3,4,5],['-5%','-4%','-3%','-2%','-1%','0%','1%','2%','3%','4%','5%'])
-        #plt.xlabel('日期')
+        plt.yticks([-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6],['-6%','-5%','-4%','-3%','-2%','-1%','0%','1%','2%','3%','4%','5%','6%'])        #plt.xlabel('日期')
         #plt.ylabel('涨幅百分比')
         f2 = f1.twinx()
         s.chart.graph[0] = f2
@@ -504,8 +503,7 @@ class Window: # 窗口类
         # 重新创建子图
         f1 = plt.subplot(111)
         f1.set_yticks(range(-6,6,1))#设置y轴的刻度范围
-        plt.yticks([-5,-4,-3,-2,-1,0,1,2,3,4,5],['-5%','-4%','-3%','-2%','-1%','0%','1%','2%','3%','4%','5%'])
-        #plt.xlabel('日期')
+        plt.yticks([-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6],['-6%','-5%','-4%','-3%','-2%','-1%','0%','1%','2%','3%','4%','5%','6%'])        #plt.xlabel('日期')
         #plt.ylabel('涨幅百分比')
         f2 = f1.twinx()
         s.chart.graph[0] = f2
@@ -529,7 +527,7 @@ class Window: # 窗口类
     def verify(s):
         sdate = s.start_date.get()
         edate = s.end_date.get()
-        if sdate >= edate and (s.str_start_date != sdate or s.str_end_date != edate): #比较开始日期和结束日期的大小
+        if sdate >= edate or (s.str_start_date == sdate and s.str_end_date == edate): #比较开始日期和结束日期的大小
             del sdate
             del edate
             return False
@@ -579,14 +577,16 @@ class Chart(Frame):
             vline[0].set_alpha(1.0*(1 - self.view))
         for pline in self.percentlines:
             pline[0].set_alpha(1.0*self.view)
+        fig1 = self.graph[0]
+        fig2 = self.graph[1]
         if self.view:
             self.button['text'] = '改变视图(比例图)'
-            # fig1.spines['right'].set_visible(False)
-            # fig2.spines['right'].set_visible(False)
+            # fig1.set_yticks(range(-6,6,1))
+            # fig2.set_yticks(range(-6,6,1))
         else:
             self.button['text'] = '改变视图(净值图)'
-            # fig1.spines['left'].set_visible(False)
-            # fig2.spines['left'].set_visible(False)
+            # fig1.set_yticks(range(0,5,1))
+            # fig2.set_yticks(range(0,5,1))
         self.canvas.draw()
         self.canvas.get_tk_widget().place(relx=0.5,rely=0.5,relwidth=1,relheight=1,anchor=CENTER)
         self.canvas._tkcanvas.place(relx=0.5,rely=0.5,relwidth=1,relheight=1,anchor=CENTER)
@@ -601,8 +601,8 @@ class Chart(Frame):
         self.figure = plt.figure(num=2, figsize=(10, 5), dpi=80,facecolor='black', edgecolor='black', frameon=True)
         # 创建一副子图
         fig1 = plt.subplot(111)
-        fig1.set_yticks(range(-6,6,1))#设置y轴的刻度范围
-        plt.yticks([-5,-4,-3,-2,-1,0,1,2,3,4,5],['-5%','-4%','-3%','-2%','-1%','0%','1%','2%','3%','4%','5%'])
+        fig1.set_yticks(range(-6,6,1))#设置比例图y轴的刻度范围
+        plt.yticks([-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6],['-6%','-5%','-4%','-3%','-2%','-1%','0%','1%','2%','3%','4%','5%','6%'])
         #plt.xlabel('日期')
         #plt.ylabel('涨幅百分比')
         fig2 = fig1.twinx()

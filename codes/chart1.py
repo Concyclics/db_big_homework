@@ -13,6 +13,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 import databaseOP
 # import fundation
 import creeper
+import Tips
 
 datetime = calendar.datetime.datetime
 timedelta = calendar.datetime.timedelta
@@ -429,8 +430,12 @@ class Window: # 窗口类
         if code not in s.originalfund: #不在预选基金里
             fund = creeper.getFund(code)
             if fund == False: #code不正确
+                Tips.failWindow("找不到该基金！")
                 return fund
+            Tips.successWindow("正在写入数据……")
             s.originalfund.append(code)
+            s.originalfund.sort()
+            s.comboxlist["values"]=s.originalfund
             with databaseOP.DBconnect(password='19260817') as DB:
                 valuelist = []
                 x = []
@@ -451,6 +456,7 @@ class Window: # 窗口类
                     y.append(history.value)
                 s.coderecord[s.codekey[code]].append(x)
                 s.coderecord[s.codekey[code]].append(y)
+                s.coderecord[s.codekey[code]].append(s.chart.calpercent(y))
         if code not in s.fundINview:
             s.fundINview.append(code)
             s.chart.addLine(s.coderecord[s.codekey[code]][1],s.coderecord[s.codekey[code]][2],s.coderecord[s.codekey[code]][3],s.coderecord[s.codekey[code]][0][0]) #valuelist

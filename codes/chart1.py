@@ -484,13 +484,13 @@ class Window: # 窗口类
         f1 = plt.subplot(111)
         f1.set_yticks(range(-6,6,1))#设置y轴的刻度范围
         plt.yticks([-5,-4,-3,-2,-1,0,1,2,3,4,5],['-5%','-4%','-3%','-2%','-1%','0%','1%','2%','3%','4%','5%'])
-        plt.xlabel('日期')
-        plt.ylabel('涨幅百分比')
+        #plt.xlabel('日期')
+        #plt.ylabel('涨幅百分比')
         f2 = f1.twinx()
         s.chart.graph[0] = f2
         s.chart.graph[1] = f1
         f2.set_yticks(range(0,5,1))#设置y轴的刻度范围
-        plt.ylabel('净值')
+        #plt.ylabel('净值')
         f1.spines['top'].set_visible(False)
         f2.spines['top'].set_visible(False)
         for child in s.detail.get_children(): #清除表格
@@ -510,12 +510,12 @@ class Window: # 窗口类
         f1 = plt.subplot(111)
         f1.set_yticks(range(-6,6,1))#设置y轴的刻度范围
         plt.yticks([-5,-4,-3,-2,-1,0,1,2,3,4,5],['-5%','-4%','-3%','-2%','-1%','0%','1%','2%','3%','4%','5%'])
-        plt.xlabel('日期')
-        plt.ylabel('涨幅百分比')
+        #plt.xlabel('日期')
+        #plt.ylabel('涨幅百分比')
         f2 = f1.twinx()
         s.chart.graph[0] = f2
         s.chart.graph[1] = f1
-        plt.ylabel('净值')
+        #plt.ylabel('净值')
         f2.set_yticks(range(0,5,1))#设置y轴的刻度范围
         f1.spines['top'].set_visible(False)
         f2.spines['top'].set_visible(False)
@@ -611,12 +611,12 @@ class Chart(Frame):
         fig1 = plt.subplot(111)
         fig1.set_yticks(range(-6,6,1))#设置y轴的刻度范围
         plt.yticks([-5,-4,-3,-2,-1,0,1,2,3,4,5],['-5%','-4%','-3%','-2%','-1%','0%','1%','2%','3%','4%','5%'])
-        plt.xlabel('日期')
-        plt.ylabel('涨幅百分比')
+        #plt.xlabel('日期')
+        #plt.ylabel('涨幅百分比')
         fig2 = fig1.twinx()
         self.graph.append(fig2)
         self.graph.append(fig1)
-        plt.ylabel('净值')
+        #plt.ylabel('净值')
         fig2.set_yticks(range(0,5,1))#设置y轴的刻度范围
         fig1.spines['top'].set_visible(False)
         fig2.spines['top'].set_visible(False)

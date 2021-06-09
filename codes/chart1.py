@@ -297,14 +297,17 @@ class Window: # 窗口类
         s.root['bg'] = '#000000'
         screenwidth = s.root.winfo_screenwidth() 
         screenheight = s.root.winfo_screenheight()
+        # print(s.root.winfo_screenheight())
         alignstr = '%dx%d+%d+%d' % (screenwidth*0.7, screenheight*0.7, screenwidth*0.3/2, screenheight*0.3/2)
         s.root.geometry(alignstr)
         s.comboxlist["values"]=s.originalfund
         s.comboxlist.current(0) #选择第一个
         s.comboxlist.place(relx=0.5,rely=0.05,relwidth=0.4,relheight=0.05,anchor=CENTER)
 
-        lb = Label(s.root,text = '请选择要比较的基金(可以手动输入想要查看的基金编号)',bg='black',fg='white')
-        lb.place(relx=0.15,rely=0.05,relwidth=0.28,relheight=0.05,anchor=CENTER)
+        toplb = Label(s.root,text = '请选择要比较的基金(可以手动输入想要查看的基金编号)',bg='black',fg='white')
+        toplb.place(relx=0.15,rely=0.05,relwidth=0.28,relheight=0.05,anchor=CENTER)
+        bottomlb = Label(s.root,text = '(若值为null,则为无数据或休息日)',bg='black',fg='white')
+        bottomlb.place(relx=0.15,rely=0.97,relwidth=0.2,relheight=0.05,anchor=CENTER)
         fm1 = Frame(s.root, bg='black', width=screenwidth*0.4, height=screenheight*0.4)
         fm2 = Frame(s.root, bg='black', width=screenwidth*0.4, height=screenheight*0.3)
         fm3 = Frame(s.root, bg='white', width=screenwidth*0.4, height=screenheight*0.3)
@@ -473,8 +476,8 @@ class Window: # 窗口类
             s.chart.showGraph()
 
     def clearGraph(s):
-        for i in range(s.chart.linenum):
-            s.chart.delLine(0)
+        while s.chart.linenum > 0:
+            s.chart.delLine(s.chart.linenum - 1)
         plt.clf()
         # 重新创建子图
         f1 = plt.subplot(111)
@@ -671,6 +674,3 @@ class Chart(Frame):
 if __name__ == '__main__':
     win = Window()
     win.main() #直接调用
-
-    #def connect(self,Window)
-    #connect  lambda:viewinfo(Window)

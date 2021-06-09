@@ -84,8 +84,7 @@ def updateALL(DB):
         code=code[0]
         
         tmp=creeper.getFund(code)
-        if addFund(DB,tmp)==False:
-            updateFund(DB,code,tmp)
+        updateFund(DB,code,tmp)
             
         last=getLatestDate(DB,code)
         if last == False:

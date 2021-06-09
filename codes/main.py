@@ -38,8 +38,12 @@ if __name__=='__main__':
     if databaseOP.DBexist(DB)==False:
         databaseOP.DBinit(DB)
         print("数据库不存在，正重新创建")
+        with alive_bar(len(qieman+danjuan)) as bar:
+            for code in qieman+danjuan:
+                databaseOP.updateFundInfo(DB,code)
+                bar()
     
-    databaseOP.updateALL(DB)
+    #databaseOP.updateALL(DB)
                 
     win = chart1.Window()
     win.main()

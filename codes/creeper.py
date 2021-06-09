@@ -20,7 +20,7 @@ qieman.sort()
 
 #x-sign记得每天更新
 header_for_qieman={
-'x-sign':'1623162921414FCFAEBDC988A140B933A57A083172281' #2021-6-8
+'x-sign':'1623210823066984ADA4CCD1D9EF4C75ECDCD259FC18B' #2021-6-9
 }
 
 #获取当天信息
@@ -212,7 +212,7 @@ def getHistory(code,size=10):
     
 if __name__=='__main__':
 
-    for code in danjuan+qieman:
+    for code in qieman:
         getFund(code).display()
         for x in getHistory(code):
             x.display()

@@ -370,7 +370,7 @@ class Window: # 窗口类
                         s.detail.insert('','end',values=[s.coderecord[s.codekey[code]][0][0],strx,y,'%.2f'%z+'%'],tags=(s.chart.coloruse[index],))
                         break
                     elif (x - s.coderecord[s.codekey[code]][1][0]).days > int(event.xdata+0.5) - (s.coderecord[s.codekey[code]][1][0] - dt.date(1970,1,1)).days:
-                        s.detail.insert('','end',values=[s.coderecord[s.codekey[code]][0][0],strx,'null','null'],tags=(s.chart.coloruse[index],))
+                        s.detail.insert('','end',values=[s.coderecord[s.codekey[code]][0][0],strx,y,'%.2f'%z+'%'],tags=(s.chart.coloruse[index],))
                         break
             s.chart.showGraph()
 
@@ -529,7 +529,7 @@ class Window: # 窗口类
     def verify(s):
         sdate = s.start_date.get()
         edate = s.end_date.get()
-        if sdate >= edate: #比较开始日期和结束日期的大小
+        if sdate >= edate and (s.str_start_date != sdate or s.str_end_date != edate): #比较开始日期和结束日期的大小
             del sdate
             del edate
             return False

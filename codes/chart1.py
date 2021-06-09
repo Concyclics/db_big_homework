@@ -308,12 +308,12 @@ class Window: # 窗口类
 
         toplb = Label(s.root,text = '请选择要比较的基金(可以手动输入想要查看的基金编号)',bg='black',fg='white')
         toplb.place(relx=0.15,rely=0.05,relwidth=0.28,relheight=0.05,anchor=CENTER)
-        bottomlb = Label(s.root,text = '(若值为null,则为无数据或休息日)',bg='black',fg='white')
-        bottomlb.place(relx=0.15,rely=0.97,relwidth=0.2,relheight=0.05,anchor=CENTER)
+        bottomlb = Label(s.root,text = '(点击图像 可显示离点击处最近的基金数据)',bg='black',fg='white')
+        bottomlb.place(relx=0.15,rely=0.97,relwidth=0.25,relheight=0.05,anchor=CENTER)
         fm1 = Frame(s.root, bg='black', width=screenwidth*0.4, height=screenheight*0.4)
         fm2 = Frame(s.root, bg='black', width=screenwidth*0.4, height=screenheight*0.3)
         fm3 = Frame(s.root, bg='white', width=screenwidth*0.4, height=screenheight*0.3)
-        fm2.place(x=0,rely=0.29,relwidth=0.3,relheight=0.4,anchor=W)
+        fm2.place(x=0,rely=0.3,relwidth=0.3,relheight=0.41,anchor=W)
         fm3.place(x=0,rely=0.75,relwidth=0.3,relheight=0.4,anchor=W)
         fm1.place(relx=0.65,rely=0.53,relwidth=0.69,relheight=0.85,anchor=CENTER)
 
@@ -342,8 +342,8 @@ class Window: # 窗口类
 
         delbutton = Button(s.root,text='删除选中基金',bg='#c0c0c0',command=s.cancelLine)
         delallbutton = Button(s.root,text='删除所有选中基金',bg='#c0c0c0',command=s.cancelallLine)
-        delbutton.place(relx=0,rely=0.51,relwidth=0.08,relheight=0.04,anchor=W)
-        delallbutton.place(relx=0.30,rely=0.51,relwidth=0.1,relheight=0.04,anchor=E)
+        delbutton.place(relx=0,rely=0.53,relwidth=0.08,relheight=0.04,anchor=W)
+        delallbutton.place(relx=0.30,rely=0.53,relwidth=0.1,relheight=0.04,anchor=E)
         s.getdata()
 
     def __del__(s):
@@ -374,7 +374,7 @@ class Window: # 窗口类
             s.chart.showGraph()
 
     def tree(s,master,title1,title2,title3,title4,w1,w2,w3,w4):
-        scrollBar = Scrollbar(master)
+        scrollBar = Scrollbar(master,orient=VERTICAL)
         scrollBar.pack(side=RIGHT, fill=Y)
         style=ttk.Style(master)
         # style.theme_use('clam')
@@ -455,13 +455,13 @@ class Window: # 窗口类
     def cancelLine(s):#删除选中记录
         if s.treeview.selection() != ():
             j = i = 0
-            for index,item in enumerate(s.treeview.get_children()):
+            for item in s.treeview.get_children():
                 w = 0
                 for selected in s.treeview.selection():
                     if item == selected:
-                        s.treeview.delete(item)
                         if s.detail.get_children() != ():
-                            s.detail.delete(s.detail.get_children()[index])
+                            s.detail.delete(s.detail.get_children()[s.treeview.index(item)])
+                        s.treeview.delete(item)
                         s.chart.delLine(i)
                         del s.fundINview[j]
                         w = 1
@@ -469,6 +469,8 @@ class Window: # 窗口类
                 j += 1
                 if w == 0:
                     i += 1
+            if s.fundINview == []:
+                s.clearGraph()
             s.chart.showGraph()
 
     def clearGraph(s):
@@ -577,8 +579,8 @@ class Chart(Frame):
             vline[0].set_alpha(1.0*(1 - self.view))
         for pline in self.percentlines:
             pline[0].set_alpha(1.0*self.view)
-        fig1 = self.graph[0]
-        fig2 = self.graph[1]
+        # fig1 = self.graph[0]
+        # fig2 = self.graph[1]
         if self.view:
             self.button['text'] = '改变视图(比例图)'
             # fig1.set_yticks(range(-6,6,1))

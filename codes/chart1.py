@@ -371,7 +371,7 @@ class Window: # 窗口类
                     if (x - s.coderecord[s.codekey[code]][1][0]).days == int(event.xdata+0.5) - (s.coderecord[s.codekey[code]][1][0] - dt.date(1970,1,1)).days:
                         # label = plt.text(x, y, (strx,y),ha='center', va='top', fontsize=15)
                         # print('show!')
-                        s.detail.insert('','end',values=[s.coderecord[s.codekey[code]][0][0],strx,y,z],tags=(s.chart.coloruse[index],))
+                        s.detail.insert('','end',values=[s.coderecord[s.codekey[code]][0][0],strx,y,'%.2f'%z+'%'],tags=(s.chart.coloruse[index],))
                         # s.chart.linelabel.append(label)
                         break
                     elif (x - s.coderecord[s.codekey[code]][1][0]).days > int(event.xdata+0.5) - (s.coderecord[s.codekey[code]][1][0] - dt.date(1970,1,1)).days:
@@ -632,6 +632,7 @@ class Chart(Frame):
             if index >= 1:
                 if yy[index-1] != 0:
                     t = 100.0*((yy[index]-yy[index-1])/yy[index-1])
+                    t = round(t+0.005,2)
                 else:
                     t = 0
                 tmp.append(t)
@@ -696,4 +697,3 @@ if __name__ == '__main__':
 
     #def connect(self,Window)
     #connect  lambda:viewinfo(Window)
-    

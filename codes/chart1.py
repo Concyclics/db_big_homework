@@ -348,7 +348,7 @@ class Window: # 窗口类
 
     def __del__(s):
         s.root.quit()
-        s.root.destroy()
+        # s.root.destroy()
 
     def viewinfo(s,event):
         if s.chart.linenum != 0 and event.xdata != None:

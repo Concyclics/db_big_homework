@@ -9,7 +9,7 @@ import calendar
 import time
 import datetime as dt
 import tkinter.font as tkFont
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import fundation
 import databaseOP
 # import fundation

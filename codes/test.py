@@ -14,7 +14,7 @@ qieman.sort()
 
 if __name__=='__main__':
     with databaseOP.DBconnect(password='19260817') as DB:
-        #databaseOP.DBinit(DB)
+        databaseOP.DBinit(DB)
         for code in danjuan+qieman:
             tmp=creeper.getFund(code)
             if databaseOP.addFund(DB,tmp)==False:

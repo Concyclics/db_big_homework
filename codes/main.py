@@ -47,8 +47,8 @@ if __name__=='__main__':
             for code in qieman+danjuan:
                 databaseOP.updateFundInfo(DB,code)
                 bar()
-    
-    #databaseOP.updateALL(DB)
+    else:
+        databaseOP.updateALL(DB)
                 
     win = chart1.Window()
     win.main()

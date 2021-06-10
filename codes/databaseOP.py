@@ -62,7 +62,7 @@ def DBinit(database):
             on update cascade
     );
     delete from funds;
-    delete from historys;
+    delete from history;
     create index code_ind on funds(code);
     create index code_ind on history(code);
     create index value_ind on history(value);

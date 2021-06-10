@@ -32,7 +32,7 @@ create table historys
 
 #clear
 delete from funds;
-delete from historys;
+delete from history;
 
 #index
 create index code_ind on funds(code);

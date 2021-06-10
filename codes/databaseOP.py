@@ -81,13 +81,13 @@ def DBinit(database):
 
 
 #多线程测试
-def update_mult():
+def update_mult(DB):
     pool=ThreadPool(cpu_count())
     
-    DB=DBconnect('localhost',username='root',password='19260817')
+    #DB=DBconnect('localhost',username='root',password='19260817')
     
     def mult_uni(code:str):
-        DB11=DBconnect('localhost',username='root',password='19260817')
+        DB11=DBconnect()
         updateFundInfo(DB11,code)
         DB11.close()
     
@@ -97,7 +97,7 @@ def update_mult():
     pool.close()
     pool.join()
     
-    DB.close()
+    #DB.close()
     
 
 
@@ -378,7 +378,7 @@ def getLatestDate(database, code:str):
         return str(fund3.day)
 
 if __name__ == '__main__':
-    #DB = DBconnect()
+    DB = DBconnect()
     #print(DBinit(DB))
     #updateFundInfo(DB,'CSI1029')
     print(cpu_count())
@@ -386,7 +386,7 @@ if __name__ == '__main__':
     #updateALL(DB)
     print("OK")
     
-    update_mult()
+    update_mult(DB)
     print("OK2")
     #print(DBexist(DB))
 #    fund1 = fundation.fund(code='1122')

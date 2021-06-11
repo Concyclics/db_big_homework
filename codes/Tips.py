@@ -26,23 +26,44 @@ def welcomeWindow():
 
 #操作成功提示弹窗
 def successWindow(tips:str='获取基金成功。'):
-	window=sg.Window("成功",[[sg.Text(tips)]],font='微软雅黑')
+	window=sg.Window("成功",[[sg.Text(tips,size=(12,1))]],font='微软雅黑')
 	event=window.Read()
 	window.Close()
 
 #操作失败提示弹窗
 def failWindow(tips:str='获取基金失败！'):
-	window=sg.Window("失败",[[sg.Text(tips)]],font='微软雅黑')
+	window=sg.Window("失败",[[sg.Text(tips,text_color='red',size=(12,1))]],font='微软雅黑')
+	event=window.Read()
+	window.Close()
+
+def TipsWindow(tips:str='正在更新数据，请稍后。'):
+	window=sg.Window("提示",[[sg.Text(tips)]],font='微软雅黑')
 	event=window.Read()
 	window.Close()
 
 
-
+def ensureWindow(title:str,op:str):
+	layout4welcome = [[sg.Text(op)],
+					[sg.Button("确认",key='submit'),sg.Text('   ',key='blank',size=(20,2)),sg.Quit("取消",key='quit')]]
+	window=sg.Window(title,layout4welcome,font='微软雅黑')
+	while True:
+		event,value=window.Read()
+		if event=='quit' or event==sg.WIN_CLOSED:
+			window.Close()
+			return False
+		elif event=='submit':
+			window.Close()
+			return True
+	window.Close()	
 
 
 if __name__=='__main__':
-#	ensure('搞比例')
+	ensureWindow('数据库链接失败！','MySQL数据库链接失败！是否尝试打开数据库？')
+	
+	ensureWindow('2333','搞比例')
 #	print(conscriptWindow(100))
+	TipsWindow()
 	welcomeWindow()
 	failWindow()
 	successWindow()
+	

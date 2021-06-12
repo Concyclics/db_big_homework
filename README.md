@@ -28,7 +28,7 @@
 
 1. [E-R图](schemas/E-R.png)
 
-####reqirements
+#### reqirements
 
 [reqirements.txt](codes/reqirements.txt)
 

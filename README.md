@@ -17,6 +17,7 @@
 3. [codes/fundation.py](codes/fundation.py)
 4. [codes/databaseOP.py](codes/databaseOP.py)
 5. [codes/chart1.py](codes/chart1.py)
+6. [codes/Tips.py](codes/Tips.py)
 
 ##### 文档
 

@@ -12,7 +12,7 @@ Software architecture description
 
 #### Files
 
-##### codes
+##### [codes](codes/)
 
 1. [codes/main.py](codes/main.py)
 2. [codes/creeper.py](codes/creeper.py)
@@ -21,13 +21,12 @@ Software architecture description
 5. [codes/chart1.py](codes/chart1.py)
 6. [codes/Tips.py](codes/Tips.py)
 
-##### documents
+##### [documnets](documents/)
 
-0. [documnets](documents/)
 1. [第一次中期检查](documents/6.7 第一次中期检查.docx)
 2. [第二次中期检查](documents/6.18 第二次中期检查.docx)
 
-##### schemas
+##### [schemas](schemas/)
 
 1. [E-R图](schemas/E-R.png)
 

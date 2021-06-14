@@ -331,7 +331,7 @@ class Window: # 窗口类
         s.changeViewBt = Button(fm1,text='改变视图(净值图)',bg='#c0c0c0',command=s.changeView)
         s.changeViewBt.place(relx=0,rely=0,relwidth=0.15,relheight=0.05,anchor=NW)
         s.treeview = s.tree(fm2,'基金名称','夏普率','最大回撤','年化波动率',85,20,25,40)
-        s.detail = s.tree(fm3,'基金名称','日期','当日净值','总涨幅',85,40,25,20)
+        s.detail = s.tree(fm3,'基金名称','日期','净值','总涨幅',85,40,25,20)
         confirm = Button(s.root,text = '确定',bg='#c0c0c0',fg='black',command=s.addGraph)
         confirm.place(relx=0.75,rely=0.05,relwidth=0.07,relheight=0.05,anchor=CENTER)
         #选择日期的按钮
@@ -346,15 +346,14 @@ class Window: # 窗口类
         endEntry.place(relx=0.6,rely=1,relwidth=0.08,relheight=0.05,anchor=SW)
         verifybt.place(relx=0.91,rely=1,relwidth=0.09,relheight=0.05,anchor=SW)
 
-        delbutton = Button(s.root,text='删除选中基金',bg='#c0c0c0',command=s.cancelLine)
+        delbutton = Button(s.root,text='删除上表选中基金',bg='#c0c0c0',command=s.cancelLine)
         delallbutton = Button(s.root,text='删除所有选中基金',bg='#c0c0c0',command=s.cancelallLine)
-        delbutton.place(relx=0,rely=0.53,relwidth=0.08,relheight=0.04,anchor=W)
-        delallbutton.place(relx=0.30,rely=0.53,relwidth=0.1,relheight=0.04,anchor=E)
+        delbutton.place(relx=0,rely=0.525,relwidth=0.1,relheight=0.04,anchor=W)
+        delallbutton.place(relx=0.30,rely=0.525,relwidth=0.1,relheight=0.04,anchor=E)
         s.getdata()
 
     def __del__(s):
         s.root.quit()
-        # s.root.destroy()
 
     def tree(s,master,title1,title2,title3,title4,w1,w2,w3,w4):
         scrollBar = Scrollbar(master,orient=VERTICAL)
@@ -377,11 +376,31 @@ class Window: # 窗口类
         scrollBar.config(command=tree.yview)
         return tree
 
+    def _caldata(s):
+        for code in s.originalfund:
+            #计算最大回撤率
+            max = 0
+            tempmax = 0
+            for index in range(len(s.coderecord[s.codekey[code]][2])):
+                for i in range(index + 1,len(s.coderecord[s.codekey[code]][2])):
+                    temp = 100.0*(s.coderecord[s.codekey[code]][2][index] - s.coderecord[s.codekey[code]][2][i])/s.coderecord[s.codekey[code]][2][index]
+                    if temp > tempmax:
+                        tempmax = temp
+                if tempmax > max:
+                    max = tempmax
+            s.coderecord[s.codekey[code]][0][2] = '%.2f'%max+'%'
+        # 更新原表    
+        for child in s.treeview.get_children(): 
+                s.treeview.delete(child)
+        for index,code in enumerate(s.fundINview):
+            s.treeview.insert('','end',values=s.coderecord[s.codekey[code]][0],tags=(s.coloruse[index],))
+            
+
     def getvaluelist(s,fund:fundation.fund,code):
         valuelist = []
         valuelist.append(fund.name)
         valuelist.append('%.2f'%fund.sharp_rate+'%')
-        valuelist.append(fund.max_down)
+        valuelist.append('%.2f'%fund.max_down+'%')
         valuelist.append('%.2f'%fund.volatility+'%')
         s.coderecord[s.codekey[code]].append(valuelist)
     
@@ -404,6 +423,7 @@ class Window: # 窗口类
                     fund = databaseOP.getFund(DB,code)
                     s.getvaluelist(fund,code)
                 s.gethistory(DB,code)
+        s._caldata()
 
     def addColor(s):
         minlen = 5
@@ -456,10 +476,7 @@ class Window: # 窗口类
                 for x,y,z in zip(s.coderecord[s.codekey[code]][1],s.coderecord[s.codekey[code]][2],s.coderecord[s.codekey[code]][3]):
                     # print((x - s.coderecord[s.codekey[code]][1][0]).days,int(event.xdata+0.5) - (s.coderecord[s.codekey[code]][1][0] - dt.date(1970,1,1)).days)
                     strx = dt.datetime.strftime(x, '%Y-%m-%d')
-                    if (x - s.coderecord[s.codekey[code]][1][0]).days == int(event.xdata+0.5) - (s.coderecord[s.codekey[code]][1][0] - dt.date(1970,1,1)).days:
-                        s.detail.insert('','end',values=[s.coderecord[s.codekey[code]][0][0],strx,y,'%.2f'%z+'%'],tags=(s.coloruse[index],))
-                        break
-                    elif (x - s.coderecord[s.codekey[code]][1][0]).days > int(event.xdata+0.5) - (s.coderecord[s.codekey[code]][1][0] - dt.date(1970,1,1)).days:
+                    if (x - s.coderecord[s.codekey[code]][1][0]).days >= int(event.xdata+0.5) - (s.coderecord[s.codekey[code]][1][0] - dt.date(1970,1,1)).days:
                         s.detail.insert('','end',values=[s.coderecord[s.codekey[code]][0][0],strx,y,'%.2f'%z+'%'],tags=(s.coloruse[index],))
                         break
             s.chart.showgraph()
@@ -619,10 +636,11 @@ class Chart(Frame):
         # 重新创建一副子图
         fig = plt.subplot(111)
         if self.view:
-            fig.set_yticks(range(-30,200,10))#设置比例图y轴的刻度范围
+            fig.set_yticks(range(-40,200,20))#设置比例图y轴的刻度范围
             plt.yticks(self.linelabel[0],self.linelabel[1])
         fig.spines['top'].set_visible(False)
         fig.spines['right'].set_visible(False)
+        fig.grid(which='major', axis='y',color='gray',linestyle='--')
         self.graph.append(fig)
 
     def showgraph(self): #将图像映射到画布上
@@ -642,7 +660,7 @@ class Chart(Frame):
         self.cleargraph()
 
     def getlabel(self):
-        for i in range(-30,200,10):
+        for i in range(-40,200,20):
             self.linelabel[0].append(i)
             self.linelabel[1].append('%d'%i+'%')
         # print(self.linelabel)

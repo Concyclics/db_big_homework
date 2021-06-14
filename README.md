@@ -10,24 +10,25 @@
 
 #### 文件
 
-##### 代码
+##### [代码](codes/)
 
 1. [codes/main.py](codes/main.py)
 2. [codes/creeper.py](codes/creeper.py)
 3. [codes/fundation.py](codes/fundation.py)
 4. [codes/databaseOP.py](codes/databaseOP.py)
 5. [codes/chart1.py](codes/chart1.py)
+6. [codes/Tips.py](codes/Tips.py)
 
-##### 文档
+##### [文档](documents/)
 
-1. [第一次中期检查](documents/6.7 第一次中期检查.docx)
-2. [第二次中期检查](documents/6.18 第二次中期检查.docx)
+1. [第一次中期检查](documents/6\.7 第一次中期检查.docx)
+2. [第二次中期检查](documents/6\.18 第二次中期检查.docx)
 
-##### 图例
+##### [图例](schemas/)
 
 1. [E-R图](schemas/E-R.png)
 
-####reqirements
+#### reqirements
 
 [reqirements.txt](codes/reqirements.txt)
 

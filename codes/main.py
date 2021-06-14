@@ -5,10 +5,11 @@ import fundation
 from alive_progress import alive_bar
 import datetime
 import time
-import chart1
 import os
 import sys
 import platform
+import Tips
+import chart1
 
 danjuan=['CSI1033','CSI1032','CSI1038','CSI1029','CSI1006','CSI1065']
 danjuan.sort()
@@ -20,9 +21,14 @@ qieman.sort()
 
 if __name__=='__main__':
     
+    if Tips.welcomeWindow()==False:
+        sys.exit(0)
+    #Tips.welcomeWindow()
+    #Tips.failWindow()
     DB=databaseOP.DBconnect(password='19260817')
     if DB==False:
-        print('MySQL数据库链接失败！尝试打开数据库')
+        if Tips.ensureWindow('数据库链接失败！','MySQL数据库链接失败！是否尝试打开数据库？')==False:
+            sys.exit(0)
         
         if platform.system()=='Darwin':
             os.system('/usr/local/MySQL/support-files/mysql.server start')
@@ -37,13 +43,17 @@ if __name__=='__main__':
 
     if databaseOP.DBexist(DB)==False:
         databaseOP.DBinit(DB)
-        print("数据库不存在，正重新创建")
+        if Tips.ensureWindow('数据库不存在！',"数据库不存在，是否重新创建？")==False:
+            sys.exit(0)
+            
         with alive_bar(len(qieman+danjuan)) as bar:
             for code in qieman+danjuan:
                 databaseOP.updateFundInfo(DB,code)
                 bar()
-    
-    #databaseOP.updateALL(DB)
+    else:
+        if Tips.ensureWindow('更新数据','是否更新数据？')==True:
+            databaseOP.update_mult(DB)
+            Tips.TipsWindow('数据更新完毕!')
                 
     win = chart1.Window()
     win.main()

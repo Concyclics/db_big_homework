@@ -9,10 +9,12 @@ import calendar
 import time
 import datetime as dt
 import tkinter.font as tkFont
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import fundation
 import databaseOP
 # import fundation
 import creeper
+import Tips
 
 datetime = calendar.datetime.datetime
 timedelta = calendar.datetime.timedelta
@@ -261,6 +263,8 @@ class Calendar:
 class Window: # 窗口类
     originalfund = []
     fundINview = []
+    linecoloruse = {}
+    coloruse = []
     codekey = {}
     str_start_date = '2018-01-01'
     str_end_date = time.strftime("%Y-%m-%d",time.localtime())
@@ -292,25 +296,26 @@ class Window: # 窗口类
               s.codekey[code] = index
         for i in range(len(s.originalfund)):
             s.coderecord.append([])
-        s.getdata()
         s.root.title('投资组合比较器')
         s.root.protocol("WM_DELETE_WINDOW", s.__del__)
         s.root['bg'] = '#000000'
         screenwidth = s.root.winfo_screenwidth() 
         screenheight = s.root.winfo_screenheight()
+        # print(s.root.winfo_screenheight())
         alignstr = '%dx%d+%d+%d' % (screenwidth*0.7, screenheight*0.7, screenwidth*0.3/2, screenheight*0.3/2)
         s.root.geometry(alignstr)
         s.comboxlist["values"]=s.originalfund
         s.comboxlist.current(0) #选择第一个
         s.comboxlist.place(relx=0.5,rely=0.05,relwidth=0.4,relheight=0.05,anchor=CENTER)
 
-
-        lb = Label(s.root,text = '请选择要比较的基金(可以手动输入想要查看的基金编号)',bg='black',fg='white')
-        lb.place(relx=0.15,rely=0.05,relwidth=0.28,relheight=0.05,anchor=CENTER)
+        toplb = Label(s.root,text = '请选择要比较的基金(可以手动输入想要查看的基金编号)',bg='black',fg='white')
+        toplb.place(relx=0.15,rely=0.05,relwidth=0.28,relheight=0.05,anchor=CENTER)
+        bottomlb = Label(s.root,text = '(点击图像 可显示离点击处最近的基金数据)',bg='black',fg='white')
+        bottomlb.place(relx=0.15,rely=0.97,relwidth=0.25,relheight=0.05,anchor=CENTER)
         fm1 = Frame(s.root, bg='black', width=screenwidth*0.4, height=screenheight*0.4)
         fm2 = Frame(s.root, bg='black', width=screenwidth*0.4, height=screenheight*0.3)
         fm3 = Frame(s.root, bg='white', width=screenwidth*0.4, height=screenheight*0.3)
-        fm2.place(x=0,rely=0.29,relwidth=0.3,relheight=0.4,anchor=W)
+        fm2.place(x=0,rely=0.3,relwidth=0.3,relheight=0.41,anchor=W)
         fm3.place(x=0,rely=0.75,relwidth=0.3,relheight=0.4,anchor=W)
         fm1.place(relx=0.65,rely=0.53,relwidth=0.69,relheight=0.85,anchor=CENTER)
 
@@ -320,9 +325,13 @@ class Window: # 窗口类
         s.end_date.set(s.str_end_date)
 
         s.chart = Chart(fm1)
+        for color in s.chart.linecolor:
+            s.linecoloruse[color] = []
         s.chart.canvas.mpl_connect('button_press_event', s.viewinfo)
-        s.treeview = s.tree(fm2,'基金名称','夏普率','最大回撤','年化波动率')
-        s.detail = s.tree(fm3,'基金名称','日期','当日净值','当日涨幅')
+        s.changeViewBt = Button(fm1,text='改变视图(净值图)',bg='#c0c0c0',command=s.changeView)
+        s.changeViewBt.place(relx=0,rely=0,relwidth=0.15,relheight=0.05,anchor=NW)
+        s.treeview = s.tree(fm2,'基金名称','夏普率','最大回撤','年化波动率',85,20,25,40)
+        s.detail = s.tree(fm3,'基金名称','日期','净值','总涨幅',85,40,25,20)
         confirm = Button(s.root,text = '确定',bg='#c0c0c0',fg='black',command=s.addGraph)
         confirm.place(relx=0.75,rely=0.05,relwidth=0.07,relheight=0.05,anchor=CENTER)
         #选择日期的按钮
@@ -337,43 +346,17 @@ class Window: # 窗口类
         endEntry.place(relx=0.6,rely=1,relwidth=0.08,relheight=0.05,anchor=SW)
         verifybt.place(relx=0.91,rely=1,relwidth=0.09,relheight=0.05,anchor=SW)
 
-        delbutton = Button(s.root,text='删除选中基金',bg='#c0c0c0',command=s.cancelLine)
+        delbutton = Button(s.root,text='删除上表选中基金',bg='#c0c0c0',command=s.cancelLine)
         delallbutton = Button(s.root,text='删除所有选中基金',bg='#c0c0c0',command=s.cancelallLine)
-        delbutton.place(relx=0,rely=0.51,relwidth=0.08,relheight=0.04,anchor=W)
-        delallbutton.place(relx=0.30,rely=0.51,relwidth=0.1,relheight=0.04,anchor=E)
+        delbutton.place(relx=0,rely=0.525,relwidth=0.1,relheight=0.04,anchor=W)
+        delallbutton.place(relx=0.30,rely=0.525,relwidth=0.1,relheight=0.04,anchor=E)
+        s.getdata()
 
     def __del__(s):
         s.root.quit()
-        s.root.destroy()
 
-    def viewinfo(s,event):
-        if s.chart.linenum != 0:
-            if s.chart.vline != []: #清除原有竖线
-                s.chart.vline[0].set_alpha(0.0)
-                s.chart.vline.clear()
-            if s.chart.linelabel != []: #清除原有图例
-                for lb in s.chart.linelabel:
-                    lb.set_text('')
-                s.chart.linelabel.clear()
-            fig = s.chart.graph[0]
-            vl = fig.axvline(x=event.xdata, color = "w", linestyle = "dashed")
-            s.chart.vline.append(vl)
-            for code in s.fundINview:
-                i = 0
-                for x,y in zip(s.coderecord[s.codekey[code]][1],s.coderecord[s.codekey[code]][2]):
-                    if i == event.x:
-                        print(event.x,i)
-                        strx = dt.datetime.strftime(x, '%Y-%m-%d')
-                        label = plt.text(x, y, (s.coderecord[s.codekey[code]][0][0],strx,y),ha='right', va='top', fontsize=15)
-                        # print(label)
-                        s.chart.linelabel.append(label)
-                    i += 1
-        # for a, b in zip(x1, y1):  
-        #     plt.text(a, b, (a,b),ha='center', va='bottom', fontsize=10)
-            s.chart.showGraph()
-
-    def tree(s,master,title1,title2,title3,title4):
-        scrollBar = Scrollbar(master)
+    def tree(s,master,title1,title2,title3,title4,w1,w2,w3,w4):
+        scrollBar = Scrollbar(master,orient=VERTICAL)
         scrollBar.pack(side=RIGHT, fill=Y)
         style=ttk.Style(master)
         # style.theme_use('clam')
@@ -382,10 +365,10 @@ class Window: # 窗口类
         tree.pack(side=TOP, fill=BOTH,expand=Y)
         for color in s.chart.linecolor:
             tree.tag_configure(color,background='gray',foreground=color)
-        tree.column('1',width=85,anchor='center')
-        tree.column('2',width=20,anchor='center')
-        tree.column('3',width=25,anchor='center')
-        tree.column('4',width=40,anchor='center')
+        tree.column('1',width=w1,anchor='center')
+        tree.column('2',width=w2,anchor='center')
+        tree.column('3',width=w3,anchor='center')
+        tree.column('4',width=w4,anchor='center')
         tree.heading('1',text=title1)
         tree.heading('2',text=title2)
         tree.heading('3',text=title3)
@@ -393,27 +376,128 @@ class Window: # 窗口类
         scrollBar.config(command=tree.yview)
         return tree
 
+    def _caldata(s):
+        for code in s.originalfund:
+            #计算最大回撤率
+            max = 0
+            tempmax = 0
+            for index in range(len(s.coderecord[s.codekey[code]][2])):
+                for i in range(index + 1,len(s.coderecord[s.codekey[code]][2])):
+                    temp = 100.0*(s.coderecord[s.codekey[code]][2][index] - s.coderecord[s.codekey[code]][2][i])/s.coderecord[s.codekey[code]][2][index]
+                    if temp > tempmax:
+                        tempmax = temp
+                if tempmax > max:
+                    max = tempmax
+            s.coderecord[s.codekey[code]][0][2] = '%.2f'%max+'%'
+        # 更新原表    
+        for child in s.treeview.get_children(): 
+                s.treeview.delete(child)
+        for index,code in enumerate(s.fundINview):
+            s.treeview.insert('','end',values=s.coderecord[s.codekey[code]][0],tags=(s.coloruse[index],))
+            
+
+    def getvaluelist(s,fund:fundation.fund,code):
+        valuelist = []
+        valuelist.append(fund.name)
+        valuelist.append('%.2f'%fund.sharp_rate+'%')
+        valuelist.append('%.2f'%fund.max_down+'%')
+        valuelist.append('%.2f'%fund.volatility+'%')
+        s.coderecord[s.codekey[code]].append(valuelist)
+    
+    def gethistory(s,DB,code):
+        x = []
+        y = []
+        for history in databaseOP.getHistory(DB,code,s.str_start_date,s.str_end_date):
+            x.append(history.day)
+            y.append(history.value)
+        s.coderecord[s.codekey[code]].append(x)
+        s.coderecord[s.codekey[code]].append(y)
+        s.coderecord[s.codekey[code]].append(s.chart.calpercent(y))
+
     def getdata(s):
         for code in s.originalfund:
             while len(s.coderecord[s.codekey[code]]) > 1:
                 s.coderecord[s.codekey[code]].pop()
-            valuelist = []
-            x = []
-            y = []
             with databaseOP.DBconnect(password='19260817') as DB:
                 if len(s.coderecord[s.codekey[code]]) < 1:
                     fund = databaseOP.getFund(DB,code)
-                    valuelist.append(fund.name)
-                    valuelist.append(fund.sharp_rate)
-                    valuelist.append(fund.max_down)
-                    valuelist.append(fund.volatility)
-                    s.coderecord[s.codekey[code]].append(valuelist)
-                for history in databaseOP.getHistory(DB,code,s.str_start_date,s.str_end_date):
-                    x.append(history.day)
-                    y.append(history.value)
-            s.coderecord[s.codekey[code]].append(x)
-            s.coderecord[s.codekey[code]].append(y)
+                    s.getvaluelist(fund,code)
+                s.gethistory(DB,code)
+        s._caldata()
+
+    def addColor(s):
+        minlen = 5
+        for color in s.chart.linecolor:
+            if len(s.linecoloruse[color])<minlen:
+                minlen = len(s.linecoloruse[color])
+        for color in s.chart.linecolor:
+            if len(s.linecoloruse[color]) == minlen:
+                s.coloruse.append(color)
+                s.linecoloruse[color].append(s.chart.linenum)
+                # print('after append:',color,self.linecoloruse[color])
+                break
+        # print(s.coloruse)
+        # print(s.linecoloruse)
+
+    def delColor(s,id):
+        if s.chart.linenum >= 1 and id < s.chart.linenum:
+            del s.coloruse[id]
+            for color in s.chart.linecolor:
+                w = 0
+                for index,num in enumerate(s.linecoloruse[color]):
+                    if num == id:
+                        del s.linecoloruse[color][index]
+                        # print('after delete:',color,self.linecoloruse[color])
+                        w = 1
+                        break
+                if w == 1:
+                    break
+            for color in s.chart.linecolor:
+                for index,num in enumerate(s.linecoloruse[color]):
+                      if num > id:
+                          s.linecoloruse[color][index] -= 1
+        # print(s.coloruse)
+        # print(s.linecoloruse)
+
+    def viewinfo(s,event):
+        if s.chart.linenum != 0 and event.xdata != None:
+            if s.chart.vline != []: #清除原有竖线
+                s.chart.vline[1].set_alpha(0.0)
+                s.chart.vline.clear()
+            for child in s.detail.get_children(): #清除表格
+                s.detail.delete(child)
+            vl = plt.axvline(x=event.xdata, color = "w", linestyle = "dashed")
+            s.chart.vline.append(event.xdata)
+            s.chart.vline.append(vl)
+            # print(s.chart.vline)
+            starttime=time.strptime(s.str_start_date,'%Y-%m-%d')
+            starttime=dt.date(starttime[0],starttime[1],starttime[2])
+            for index,code in enumerate(s.fundINview):
+                for x,y,z in zip(s.coderecord[s.codekey[code]][1],s.coderecord[s.codekey[code]][2],s.coderecord[s.codekey[code]][3]):
+                    # print((x - s.coderecord[s.codekey[code]][1][0]).days,int(event.xdata+0.5) - (s.coderecord[s.codekey[code]][1][0] - dt.date(1970,1,1)).days)
+                    strx = dt.datetime.strftime(x, '%Y-%m-%d')
+                    if (x - s.coderecord[s.codekey[code]][1][0]).days >= int(event.xdata+0.5) - (s.coderecord[s.codekey[code]][1][0] - dt.date(1970,1,1)).days:
+                        s.detail.insert('','end',values=[s.coderecord[s.codekey[code]][0][0],strx,y,'%.2f'%z+'%'],tags=(s.coloruse[index],))
+                        break
+            s.chart.showgraph()
       
+    def reshowGraph(s):  # 重新增加图线，改变按钮文字
+        s.chart.cleargraph() #清理原图
+        if s.chart.view: # 比例图
+            s.changeViewBt['text'] = '改变视图(比例图)'
+            for code in s.fundINview: # 重新加上图线
+                s.chart.addLine(s.coderecord[s.codekey[code]][1],s.coderecord[s.codekey[code]][3],s.coderecord[s.codekey[code]][0][0],s.coloruse[s.chart.linenum]) #valuelist
+        else:
+            s.changeViewBt['text'] = '改变视图(净值图)'
+            for code in s.fundINview: # 重新加上图线
+                s.chart.addLine(s.coderecord[s.codekey[code]][1],s.coderecord[s.codekey[code]][2],s.coderecord[s.codekey[code]][0][0],s.coloruse[s.chart.linenum])
+        if s.chart.vline != []:
+            del s.chart.vline[1]
+            vl = plt.axvline(x=s.chart.vline[0], color = "w", linestyle = "dashed")
+            # print('redraw')
+            s.chart.vline.append(vl)
+        s.chart.showgraph()
+
     def addGraph(s):#增加选中记录
         code = s.comboxlist.get() #选择框里的内容
         if code == '':
@@ -421,34 +505,32 @@ class Window: # 窗口类
         if code not in s.originalfund: #不在预选基金里
             fund = creeper.getFund(code)
             if fund == False: #code不正确
+                Tips.failWindow("找不到该基金！")
                 return fund
+            Tips.successWindow("正在写入数据……")
             s.originalfund.append(code)
+            s.originalfund.sort()
+            s.comboxlist["values"]=s.originalfund
             with databaseOP.DBconnect(password='19260817') as DB:
-                valuelist = []
-                x = []
-                y = []
                 databaseOP.addFund(DB,fund)
-                valuelist.append(fund.name)
-                valuelist.append(fund.sharp_rate)
-                valuelist.append(fund.max_down)
-                valuelist.append(fund.volatility)
                 s.codekey[code] = len(s.codekey)
                 s.coderecord.append([])
-                s.coderecord[s.codekey[code]].append(valuelist)
+                s.getvaluelist(fund,code)
                 historylist = creeper.getHistory(code,5000)
                 for history in historylist:
                     databaseOP.addHistory(DB,history)
-                for history in databaseOP.getHistory(DB,code,s.str_start_date,s.str_end_date):
-                    x.append(history.day)
-                    y.append(history.value)
-                s.coderecord[s.codekey[code]].append(x)
-                s.coderecord[s.codekey[code]].append(y)
+                s.gethistory(DB,code)
+                
         if code not in s.fundINview:
             s.fundINview.append(code)
-            s.chart.addLine(s.coderecord[s.codekey[code]][1],s.coderecord[s.codekey[code]][2],s.coderecord[s.codekey[code]][0][0]) #valuelist
-            s.chart.showGraph()
-            s.treeview.insert('','end',values=s.coderecord[s.codekey[code]][0],tags=(s.chart.coloruse,))
+            s.addColor()
+            s.treeview.insert('','end',values=s.coderecord[s.codekey[code]][0],tags=(s.coloruse[s.chart.linenum],))
+            if s.chart.view: #比例图啊
+                s.chart.addLine(s.coderecord[s.codekey[code]][1],s.coderecord[s.codekey[code]][3],s.coderecord[s.codekey[code]][0][0],s.coloruse[s.chart.linenum])
+            else:
+                s.chart.addLine(s.coderecord[s.codekey[code]][1],s.coderecord[s.codekey[code]][2],s.coderecord[s.codekey[code]][0][0],s.coloruse[s.chart.linenum])
             # s.combostyle.configure('Treeview',background = 'gray',selectbackground = 'red',foreground=s.chart.linecolor[s.chart.linenum%8],fieldbackground = 'black')
+            s.chart.showgraph()
 
     def cancelLine(s):#删除选中记录
         if s.treeview.selection() != ():
@@ -457,7 +539,10 @@ class Window: # 窗口类
                 w = 0
                 for selected in s.treeview.selection():
                     if item == selected:
+                        if s.detail.get_children() != ():
+                            s.detail.delete(s.detail.get_children()[s.treeview.index(item)])
                         s.treeview.delete(item)
+                        s.delColor(i)
                         s.chart.delLine(i)
                         del s.fundINview[j]
                         w = 1
@@ -465,42 +550,29 @@ class Window: # 窗口类
                 j += 1
                 if w == 0:
                     i += 1
-            s.chart.showGraph()
+            if s.fundINview == []:
+                s.chart.cleargraph()
+            s.chart.showgraph()
 
-    def clearGraph(s):
-        for i in range(s.chart.linenum):
-            s.chart.delLine(0)
-        plt.clf()
-        # 重新创建子图
-        f1 = plt.subplot(111)
-        f1.set_yticks(range(-6,6,1))#设置y轴的刻度范围
-        f2 = f1.twinx()
-        s.chart.graph[0] = f2
-        s.chart.graph[1] = f1
-        f2.set_yticks(range(0,5,1))#设置y轴的刻度范围
-        f1.spines['top'].set_visible(False)
-        f2.spines['top'].set_visible(False)
-        s.chart.showGraph()
-        for code in s.fundINview:
-            s.chart.addLine(s.coderecord[s.codekey[code]][1],s.coderecord[s.codekey[code]][2],s.coderecord[s.codekey[code]][0][0]) #valuelist
+    def changeView(s):
+        s.chart.view = 1 - s.chart.view
+        # print('view changed')
+        s.reshowGraph()
 
-    def cancelallLine(s):#删除选中记录
+    def cancelallLine(s): # 删除全部基金记录,清理图像和详细信息表格
         for item in s.treeview.get_children():
             s.treeview.delete(item)
-        for i in range(s.chart.linenum):
-            s.chart.delLine(0)
         s.fundINview.clear()
-        plt.clf()
-        # 重新创建子图
-        f1 = plt.subplot(111)
-        f1.set_yticks(range(-6,6,1))#设置y轴的刻度范围
-        f2 = f1.twinx()
-        s.chart.graph[0] = f2
-        s.chart.graph[1] = f1
-        f2.set_yticks(range(0,5,1))#设置y轴的刻度范围
-        f1.spines['top'].set_visible(False)
-        f2.spines['top'].set_visible(False)
-        s.chart.showGraph()
+        # 需要删除颜色了
+        tmp = s.chart.linenum
+        while tmp > 0: #删除所有颜色
+            s.delColor(tmp - 1)
+            tmp -= 1
+        s.chart.cleargraph()
+        s.chart.vline.clear()
+        for child in s.detail.get_children(): #清除表格
+            s.detail.delete(child)
+        s.chart.showgraph()
 
     def choosedate(s,type):
         for date in [Calendar().selection()]:
@@ -513,7 +585,7 @@ class Window: # 窗口类
     def verify(s):
         sdate = s.start_date.get()
         edate = s.end_date.get()
-        if sdate >= edate: #比较开始日期和结束日期的大小
+        if sdate >= edate or (s.str_start_date == sdate and s.str_end_date == edate): #比较开始日期和结束日期的大小
             del sdate
             del edate
             return False
@@ -524,8 +596,10 @@ class Window: # 窗口类
             if len(s.fundINview) == 0: #如果已经有图表，则重新生成
                 return True
             else:
-                s.clearGraph()
-                s.chart.showGraph()
+                s.chart.vline.clear()
+                for child in s.detail.get_children(): #清除表格
+                    s.detail.delete(child)
+                s.reshowGraph()
 
     def main(s):
         s.root.mainloop()
@@ -534,39 +608,42 @@ class Window: # 窗口类
 class Chart(Frame):
     linenum = 0
     linecolor = ['red','lime','blue','cyan','magenta','yellow','purple','white']
-    linecoloruse = {}
-    valuelines = []
+    linelabel = [[],[]]
+    lines = []
     vline = []
     percentlines = []
     graph = []
-    linelabel = []
     view = 0
     def __init__(self, master=None):
         super().__init__(master)  # 调用父类的初始化方法
         self.master = master
         self.pack(side=TOP, fill=BOTH, expand=1)  # 此处填充父窗体
-        for color in self.linecolor:
-            self.linecoloruse[color] = []
+        self.getlabel()
         self.create_matplotlib()
         self.createWidget(self.figure)
 
     def createWidget(self, figure):
-        # 创建改变视图按钮
-        self.button = Button(master=self.master,text='改变视图(净值图)',bg='#c0c0c0',command=self.changeview)
         # 创建画布
         self.canvas = FigureCanvasTkAgg(figure, self)
-        self.showGraph()
-        self.button.place(relx=0,rely=0,relwidth=0.15,relheight=0.05,anchor=NW)
+        self.showgraph()
 
-    def showGraph(self): #将图像映射到窗口
-        for vline in self.valuelines:
-            vline[0].set_alpha(1.0*(1 - self.view))
-        for pline in self.percentlines:
-            pline[0].set_alpha(1.0*self.view)
+    def cleargraph(self): #清理原图，建立新的坐标系
+        while self.linenum > 0: #删除原有的图线
+            self.delLine(self.linenum - 1)
+        # print(self.lines)
+        self.graph.clear()
+        plt.clf()
+        # 重新创建一副子图
+        fig = plt.subplot(111)
         if self.view:
-            self.button['text'] = '改变视图(比例图)'
-        else:
-            self.button['text'] = '改变视图(净值图)'
+            fig.set_yticks(range(-40,200,20))#设置比例图y轴的刻度范围
+            plt.yticks(self.linelabel[0],self.linelabel[1])
+        fig.spines['top'].set_visible(False)
+        fig.spines['right'].set_visible(False)
+        fig.grid(which='major', axis='y',color='gray',linestyle='--')
+        self.graph.append(fig)
+
+    def showgraph(self): #将图像映射到画布上
         self.canvas.draw()
         self.canvas.get_tk_widget().place(relx=0.5,rely=0.5,relwidth=1,relheight=1,anchor=CENTER)
         self.canvas._tkcanvas.place(relx=0.5,rely=0.5,relwidth=1,relheight=1,anchor=CENTER)
@@ -580,72 +657,40 @@ class Chart(Frame):
         plt.style.use('dark_background')
         self.figure = plt.figure(num=2, figsize=(10, 5), dpi=80,facecolor='black', edgecolor='black', frameon=True)
         # 创建一副子图
-        fig1 = plt.subplot(111)
-        fig1.set_yticks(range(-6,6,1))#设置y轴的刻度范围
-        fig2 = fig1.twinx()
-        self.graph.append(fig2)
-        self.graph.append(fig1)
-        fig2.set_yticks(range(0,5,1))#设置y轴的刻度范围
-        fig1.spines['top'].set_visible(False)
-        fig2.spines['top'].set_visible(False)
-        # .axis("off") #不显示坐标轴
+        self.cleargraph()
 
-    def changeview(self):
-        self.view = 1 - self.view
-        self.showGraph()
+    def getlabel(self):
+        for i in range(-40,200,20):
+            self.linelabel[0].append(i)
+            self.linelabel[1].append('%d'%i+'%')
+        # print(self.linelabel)
 
     def calpercent(self,yy):
+        if yy[0] == 0:
+            print('False')
+            return False
         tmp = [0.0]
+        first = yy[0]
         for index in range(len(yy)):
             if index >= 1:
-                if yy[index-1] != 0:
-                    t = ((yy[index]-yy[index-1])/yy[index-1])
-                else:
-                    t = 0
-                tmp.append(1.0*t)
+                t = 100.0*((yy[index]-first)/first)
+                t = round(t+0.005,2)
+                tmp.append(t)
+        # print(len(yy),len(tmp))
         return tmp
         
-    def addLine(self,dat,yy,name):
+    def addLine(self,dat,yy,name,coloruse):
         # plt.style.use('dark_background')
-        fig1 = self.graph[0]
-        fig2 = self.graph[1]
-        # fig1.axis("off") #不显示坐标轴
-        self.coloruse = ''
-        for color in self.linecolor:
-            if self.linecoloruse[color] == []:
-                self.coloruse = color
-                self.linecoloruse[color].append(self.linenum)
-                # print('after append:',color,self.linecoloruse[color])
-                break
-        valueline = fig1.plot(dat, yy, color=self.coloruse, label=name,linewidth=1, linestyle='-')
-        percentline = fig2.plot(dat, self.calpercent(yy), color=self.coloruse, label=name,linewidth=1, linestyle='-')
-        self.valuelines.append(valueline)
-        self.percentlines.append(percentline)
+        fig = self.graph[0]
+        line = fig.plot(dat, yy, color=coloruse, label=name,linewidth=1, linestyle='-')
+        self.lines.append(line)
         self.linenum += 1
 
     def delLine(self,id):
         if self.linenum >= 1 and id < self.linenum:
-            if self.view == 0:
-                for index,vl in enumerate(self.valuelines):
-                    vl[0].set_alpha(1.0*(index != id))
-            else:
-                for index,pl in enumerate(self.percentlines):
-                    pl[0].set_alpha(1.0*(index != id))
-            del self.valuelines[id]
-            del self.percentlines[id]
-            if self.linelabel != []:
-                del self.linelabel[id]
-            for color in self.linecolor:
-                w = 0
-                for index,num in enumerate(self.linecoloruse[color]):
-                    if num == id:
-                        del self.linecoloruse[color][index]
-                        # print('after delete:',color,self.linecoloruse[color])
-                        w = 1
-                        break
-                if w == 1:
-                    break
-            # plt.legend(self.linelabel,frameon=False)
+            for index,line in enumerate(self.lines):
+                line[0].set_alpha(1.0*(index != id))
+            del self.lines[id]
             self.linenum -= 1
         else:
             print('out of range')
@@ -657,6 +702,3 @@ class Chart(Frame):
 if __name__ == '__main__':
     win = Window()
     win.main() #直接调用
-
-    #def connect(self,Window)
-    #connect  lambda:viewinfo(Window)

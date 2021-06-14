@@ -4,6 +4,8 @@ import fundation
 import creeper
 import time
 import datetime
+from multiprocessing.dummy import Pool as ThreadPool
+from multiprocessing import cpu_count
 
 #链接数据库
 def DBconnect(hosts='localhost',*, username='root', password='19260817'):
@@ -62,7 +64,7 @@ def DBinit(database):
             on update cascade
     );
     delete from funds;
-    delete from historys;
+    delete from history;
     create index code_ind on funds(code);
     create index code_ind on history(code);
     create index value_ind on history(value);
@@ -76,6 +78,27 @@ def DBinit(database):
         database.rollback()
     else:
         return True
+
+
+#多线程测试
+def update_mult(DB):
+    pool=ThreadPool(cpu_count())
+    
+    #DB=DBconnect('localhost',username='root',password='19260817')
+    
+    def mult_uni(code:str):
+        DB11=DBconnect()
+        updateFundInfo(DB11,code)
+        DB11.close()
+    
+    for code in getFundlist(DB):
+        pool.apply_async(mult_uni,(code[0],))
+        
+    pool.close()
+    pool.join()
+    
+    #DB.close()
+    
 
 
 def updateALL(DB):
@@ -102,6 +125,8 @@ def updateALL(DB):
             
 def updateFundInfo(DB,code:str):
         
+    #print(code+' start')
+    
     tmp=creeper.getFund(code)
     if addFund(DB,tmp)==False:
         updateFund(DB,code,tmp)
@@ -118,6 +143,8 @@ def updateFundInfo(DB,code:str):
         
     for history in creeper.getHistory(code,diff):
         addHistory(DB, history)
+        
+        #print(code+' end')
 
 def addFund(database, fund1: fundation.fund):
     if type(database).__name__ != 'Connection':
@@ -353,10 +380,15 @@ def getLatestDate(database, code:str):
 if __name__ == '__main__':
     DB = DBconnect()
     #print(DBinit(DB))
-    updateFundInfo(DB,'CSI1029')
+    #updateFundInfo(DB,'CSI1029')
+    print(cpu_count())
+    #print("OK")
+    #updateALL(DB)
     print("OK")
-    updateALL(DB)
-    print(DBexist(DB))
+    
+    update_mult(DB)
+    print("OK2")
+    #print(DBexist(DB))
 #    fund1 = fundation.fund(code='1122')
 #    history1 = fundation.history(code='1122', day='2000-01-01')
 #    print(addFund(DB, fund1))

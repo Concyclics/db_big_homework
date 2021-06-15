@@ -36,7 +36,9 @@ if __name__=='__main__':
             os.system('net start mysql')
         elif platform.system()=='Linux':
             os.system('service mysql start')
-            
+        
+        time.sleep(0.5)
+        DB=databaseOP.DBconnect(password='19260817')
         DB=databaseOP.DBconnect(password='19260817')
         if DB==False:
             raise ConnectionError('MySQL数据库链接失败！')

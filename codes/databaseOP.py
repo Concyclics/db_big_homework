@@ -11,7 +11,7 @@ from multiprocessing import cpu_count
 def DBconnect(hosts='localhost',*, username='root', password='19260817'):
     try:
         pymysql.connect(host=hosts, user=username, passwd=password)
-    except:
+    except Exception:
         return False
     else:
         database = pymysql.connect(host=hosts, user=username, passwd=password)
@@ -74,7 +74,7 @@ def DBinit(database):
         for line in splitSql(reset_sql):
             cursor.execute(line)
             database.commit()
-    except:
+    except Exception:
         database.rollback()
     else:
         return True

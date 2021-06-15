@@ -9,7 +9,10 @@ import calendar
 import time
 import datetime as dt
 import tkinter.font as tkFont
+from tkinter.simpledialog import askstring
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from itertools import chain
+from pypinyin import pinyin, Style
 import fundation
 import databaseOP
 # import fundation
@@ -332,6 +335,12 @@ class Window: # 窗口类
         s.changeViewBt.place(relx=0,rely=0,relwidth=0.15,relheight=0.05,anchor=NW)
         s.treeview = s.tree(fm2,'基金名称','夏普率','最大回撤','年化波动率',85,20,25,40)
         s.detail = s.tree(fm3,'基金名称','日期','净值','总涨幅',85,40,25,20)
+        updateinfo1 = Label(s.root,text = '若未更新x-sign,',bg='black',fg='white')
+        updateinfo2 = Label(s.root,text = '更新数据前可输入新的x-sign',bg='black',fg='white')
+        updatebt = Button(s.root,text='更新数据',bg='#c0c0c0',command=s.update)
+        updateinfo1.place(relx=0.92,rely=0.03,relwidth=0.4,relheight=0.04,anchor=CENTER)
+        updateinfo2.place(relx=0.92,rely=0.07,relwidth=0.4,relheight=0.04,anchor=CENTER)
+        updatebt.place(relx=0.98,rely=0.1,relwidth=0.1,relheight=0.05,anchor=NE)
         confirm = Button(s.root,text = '确定',bg='#c0c0c0',fg='black',command=s.addGraph)
         confirm.place(relx=0.75,rely=0.05,relwidth=0.07,relheight=0.05,anchor=CENTER)
         #选择日期的按钮
@@ -369,11 +378,58 @@ class Window: # 窗口类
         tree.column('2',width=w2,anchor='center')
         tree.column('3',width=w3,anchor='center')
         tree.column('4',width=w4,anchor='center')
-        tree.heading('1',text=title1)
-        tree.heading('2',text=title2)
-        tree.heading('3',text=title3)
-        tree.heading('4',text=title4)
+        tree.heading('1',text=title1,command=lambda:orderby(1))
+        tree.heading('2',text=title2,command=lambda:orderby(2))
+        tree.heading('3',text=title3,command=lambda:orderby(3))
+        tree.heading('4',text=title4,command=lambda:orderby(4))
+        sequence = [0,0,0,0]
         scrollBar.config(command=tree.yview)
+        def to_pinyin(s):
+            '''转拼音
+            :param s: 字符串或列表
+            :type s: str or list
+            :return: 拼音字符串
+            >>> to_pinyin('你好吗')
+            'ni3hao3ma'
+            >>> to_pinyin(['你好', '吗'])
+            'ni3hao3ma'
+            '''
+            return ''.join(chain.from_iterable(pinyin(s, style=Style.TONE3)))
+        def orderby(n:int):
+            w = 1
+            while w:
+                w = 0
+                for index in range(len(tree.get_children())):
+                    if index + 1 < len(tree.get_children()):
+                        if sequence[n-1]: #降序
+                            if n == 1:
+                                if to_pinyin(tree.item(tree.get_children()[index],'values')[n-1]) < to_pinyin(tree.item(tree.get_children()[index + 1],'values')[n-1]):
+                                    tree.move(tree.get_children()[index],'',index=index+1)
+                                    w = 1
+                            else:
+                                try:
+                                    if float(tree.item(tree.get_children()[index],'values')[n-1].strip('%')) < float(tree.item(tree.get_children()[index + 1],'values')[n-1].strip('%')):
+                                        tree.move(tree.get_children()[index],'',index=index+1)
+                                        w = 1
+                                except ValueError:
+                                    if tree.item(tree.get_children()[index],'values')[n-1] < tree.item(tree.get_children()[index + 1],'values')[n-1]:
+                                        tree.move(tree.get_children()[index],'',index=index+1)
+                                        w = 1
+                        else: #升序
+                            if n == 1:
+                                if to_pinyin(tree.item(tree.get_children()[index],'values')[n-1]) > to_pinyin(tree.item(tree.get_children()[index + 1],'values')[n-1]):
+                                    tree.move(tree.get_children()[index],'',index=index+1)
+                                    w = 1
+                            else:
+                                try:
+                                    if float(tree.item(tree.get_children()[index],'values')[n-1].strip('%')) > float(tree.item(tree.get_children()[index + 1],'values')[n-1].strip('%')):
+                                        tree.move(tree.get_children()[index],'',index=index+1)
+                                        w = 1
+                                except ValueError:
+                                    if tree.item(tree.get_children()[index],'values')[n-1] > tree.item(tree.get_children()[index + 1],'values')[n-1]:
+                                        tree.move(tree.get_children()[index],'',index=index+1)
+                                        w = 1
+            sequence[n-1] = 1 - sequence[n-1]
         return tree
 
     def _caldata(s):
@@ -393,8 +449,7 @@ class Window: # 窗口类
         for child in s.treeview.get_children(): 
                 s.treeview.delete(child)
         for index,code in enumerate(s.fundINview):
-            s.treeview.insert('','end',values=s.coderecord[s.codekey[code]][0],tags=(s.coloruse[index],))
-            
+            s.treeview.insert('','end',values=s.coderecord[s.codekey[code]][0],tags=(s.coloruse[index],index))
 
     def getvaluelist(s,fund:fundation.fund,code):
         valuelist = []
@@ -424,6 +479,26 @@ class Window: # 窗口类
                     s.getvaluelist(fund,code)
                 s.gethistory(DB,code)
         s._caldata()
+
+    def update(s):
+        xsign = askstring("请检查x-sign", "若x-sign未更新,请输入最新x-sign:")
+        # print(xsign)
+        if xsign != None: #点击cancel 或 关闭按钮
+            if xsign != '': # 输入为空
+                temp = creeper.header_for_qieman
+                creeper.header_for_qieman['x-sign'] = xsign
+            if creeper.getFund(creeper.qieman[0]) == False: # x-sign不正确
+                Tips.failWindow("x-sign有误。")
+                if xsign != '': # 输入为空
+                    creeper.header_for_qieman = temp
+                return False
+            with databaseOP.DBconnect(password='19260817') as DB:
+                databaseOP.update_mult(DB)
+
+            s.getdata() #重新获取数据，可以优化配合update_mult只更新小部分数据，如果重新获取开销太大，运行很慢
+
+            if len(s.fundINview) != 0:
+                s.reshowGraph() #重新显示图线
 
     def addColor(s):
         minlen = 5
@@ -477,7 +552,7 @@ class Window: # 窗口类
                     # print((x - s.coderecord[s.codekey[code]][1][0]).days,int(event.xdata+0.5) - (s.coderecord[s.codekey[code]][1][0] - dt.date(1970,1,1)).days)
                     strx = dt.datetime.strftime(x, '%Y-%m-%d')
                     if (x - s.coderecord[s.codekey[code]][1][0]).days >= int(event.xdata+0.5) - (s.coderecord[s.codekey[code]][1][0] - dt.date(1970,1,1)).days:
-                        s.detail.insert('','end',values=[s.coderecord[s.codekey[code]][0][0],strx,y,'%.2f'%z+'%'],tags=(s.coloruse[index],))
+                        s.detail.insert('','end',values=[s.coderecord[s.codekey[code]][0][0],strx,y,'%.2f'%z+'%'],tags=(s.coloruse[index],index))
                         break
             s.chart.showgraph()
       
@@ -524,7 +599,7 @@ class Window: # 窗口类
         if code not in s.fundINview:
             s.fundINview.append(code)
             s.addColor()
-            s.treeview.insert('','end',values=s.coderecord[s.codekey[code]][0],tags=(s.coloruse[s.chart.linenum],))
+            s.treeview.insert('','end',values=s.coderecord[s.codekey[code]][0],tags=(s.coloruse[s.chart.linenum],s.chart.linenum))
             if s.chart.view: #比例图啊
                 s.chart.addLine(s.coderecord[s.codekey[code]][1],s.coderecord[s.codekey[code]][3],s.coderecord[s.codekey[code]][0][0],s.coloruse[s.chart.linenum])
             else:
@@ -534,22 +609,22 @@ class Window: # 窗口类
 
     def cancelLine(s):#删除选中记录
         if s.treeview.selection() != ():
-            j = i = 0
-            for item in s.treeview.get_children():
-                w = 0
-                for selected in s.treeview.selection():
-                    if item == selected:
-                        if s.detail.get_children() != ():
-                            s.detail.delete(s.detail.get_children()[s.treeview.index(item)])
-                        s.treeview.delete(item)
-                        s.delColor(i)
-                        s.chart.delLine(i)
-                        del s.fundINview[j]
-                        w = 1
-                        break
-                j += 1
-                if w == 0:
-                    i += 1
+            for selected in s.treeview.selection():
+                id = int(s.treeview.item(selected,'tags')[1])
+                # print(i,type(i))
+                s.delColor(id)
+                s.chart.delLine(id)
+                del s.fundINview[id]
+                if s.detail.get_children() != ():
+                    for child in s.detail.get_children():
+                        if s.detail.item(child,'tags') == s.treeview.item(selected,'tags'):
+                            s.detail.delete(child)
+                        elif int(s.detail.item(child,'tags')[1]) > id:
+                            s.detail.item(child,tags=(s.detail.item(child,'tags')[0],int(s.detail.item(child,'tags')[1])-1))
+                s.treeview.delete(selected)
+                for item in s.treeview.get_children():
+                    if int(s.treeview.item(item,'tags')[1]) > id:
+                        s.treeview.item(item,tags=(s.treeview.item(item,'tags')[0],int(s.treeview.item(item,'tags')[1])-1))
             if s.fundINview == []:
                 s.chart.cleargraph()
             s.chart.showgraph()

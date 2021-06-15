@@ -305,7 +305,7 @@ class Window: # 窗口类
         screenwidth = s.root.winfo_screenwidth() 
         screenheight = s.root.winfo_screenheight()
         # print(s.root.winfo_screenheight())
-        alignstr = '%dx%d+%d+%d' % (screenwidth*0.7, screenheight*0.7, screenwidth*0.3/2, screenheight*0.3/2)
+        alignstr = '%dx%d+%d+%d' % (screenwidth*0.9, screenheight*0.8, screenwidth*0.05, screenheight*0.1)
         s.root.geometry(alignstr)
         s.comboxlist["values"]=s.originalfund
         s.comboxlist.current(0) #选择第一个
@@ -333,8 +333,8 @@ class Window: # 窗口类
         s.chart.canvas.mpl_connect('button_press_event', s.viewinfo)
         s.changeViewBt = Button(fm1,text='改变视图(净值图)',bg='#c0c0c0',command=s.changeView)
         s.changeViewBt.place(relx=0,rely=0,relwidth=0.15,relheight=0.05,anchor=NW)
-        s.treeview = s.tree(fm2,'基金名称','夏普率','最大回撤','年化波动率',85,20,25,40)
-        s.detail = s.tree(fm3,'基金名称','日期','净值','总涨幅',85,40,25,20)
+        s.treeview = s.tree(fm2,4,['基金名称','夏普率','最大回撤','年化波动率'],[85,20,25,40])
+        s.detail = s.tree(fm3,5,['基金代码','日期','净值','总涨幅','年华收益率'],[30,40,30,20,40])
         updateinfo1 = Label(s.root,text = '若未更新x-sign,',bg='black',fg='white')
         updateinfo2 = Label(s.root,text = '更新数据前可输入新的x-sign',bg='black',fg='white')
         updatebt = Button(s.root,text='更新数据',bg='#c0c0c0',command=s.update)
@@ -364,25 +364,24 @@ class Window: # 窗口类
     def __del__(s):
         s.root.quit()
 
-    def tree(s,master,title1,title2,title3,title4,w1,w2,w3,w4):
+    def tree(s,master,n:int,title:list,width:list):
         scrollBar = Scrollbar(master,orient=VERTICAL)
         scrollBar.pack(side=RIGHT, fill=Y)
         style=ttk.Style(master)
         # style.theme_use('clam')
         style.configure('Treeview',background = 'white',selectbackground = 'black',fieldbackground = 'black')
-        tree = ttk.Treeview(master,columns=['1','2','3','4'],show='headings',selectmode='extended',yscrollcommand=scrollBar.set)
+        col = []
+        sequence = []
+        for index in range(n):
+            sequence.append(0)
+            col.append('%d'%index)
+        tree = ttk.Treeview(master,columns=col,show='headings',selectmode='extended',yscrollcommand=scrollBar.set)
         tree.pack(side=TOP, fill=BOTH,expand=Y)
         for color in s.chart.linecolor:
             tree.tag_configure(color,background='gray',foreground=color)
-        tree.column('1',width=w1,anchor='center')
-        tree.column('2',width=w2,anchor='center')
-        tree.column('3',width=w3,anchor='center')
-        tree.column('4',width=w4,anchor='center')
-        tree.heading('1',text=title1,command=lambda:orderby(1))
-        tree.heading('2',text=title2,command=lambda:orderby(2))
-        tree.heading('3',text=title3,command=lambda:orderby(3))
-        tree.heading('4',text=title4,command=lambda:orderby(4))
-        sequence = [0,0,0,0]
+        for i in range(n):
+            tree.column('%d'%i,width=width[i],anchor='center')
+            tree.heading('%d'%i,text=title[i],command=lambda:orderby(i))
         scrollBar.config(command=tree.yview)
         def to_pinyin(s):
             '''转拼音
@@ -401,35 +400,35 @@ class Window: # 窗口类
                 w = 0
                 for index in range(len(tree.get_children())):
                     if index + 1 < len(tree.get_children()):
-                        if sequence[n-1]: #降序
-                            if n == 1:
-                                if to_pinyin(tree.item(tree.get_children()[index],'values')[n-1]) < to_pinyin(tree.item(tree.get_children()[index + 1],'values')[n-1]):
+                        if sequence[n]: #降序
+                            if n == 0:
+                                if to_pinyin(tree.item(tree.get_children()[index],'values')[n]) < to_pinyin(tree.item(tree.get_children()[index + 1],'values')[n]):
                                     tree.move(tree.get_children()[index],'',index=index+1)
                                     w = 1
                             else:
                                 try:
-                                    if float(tree.item(tree.get_children()[index],'values')[n-1].strip('%')) < float(tree.item(tree.get_children()[index + 1],'values')[n-1].strip('%')):
+                                    if float(tree.item(tree.get_children()[index],'values')[n].strip('%')) < float(tree.item(tree.get_children()[index + 1],'values')[n].strip('%')):
                                         tree.move(tree.get_children()[index],'',index=index+1)
                                         w = 1
                                 except ValueError:
-                                    if tree.item(tree.get_children()[index],'values')[n-1] < tree.item(tree.get_children()[index + 1],'values')[n-1]:
+                                    if tree.item(tree.get_children()[index],'values')[n] < tree.item(tree.get_children()[index + 1],'values')[n]:
                                         tree.move(tree.get_children()[index],'',index=index+1)
                                         w = 1
                         else: #升序
-                            if n == 1:
-                                if to_pinyin(tree.item(tree.get_children()[index],'values')[n-1]) > to_pinyin(tree.item(tree.get_children()[index + 1],'values')[n-1]):
+                            if n == 0:
+                                if to_pinyin(tree.item(tree.get_children()[index],'values')[n]) > to_pinyin(tree.item(tree.get_children()[index + 1],'values')[n]):
                                     tree.move(tree.get_children()[index],'',index=index+1)
                                     w = 1
                             else:
                                 try:
-                                    if float(tree.item(tree.get_children()[index],'values')[n-1].strip('%')) > float(tree.item(tree.get_children()[index + 1],'values')[n-1].strip('%')):
+                                    if float(tree.item(tree.get_children()[index],'values')[n].strip('%')) > float(tree.item(tree.get_children()[index + 1],'values')[n].strip('%')):
                                         tree.move(tree.get_children()[index],'',index=index+1)
                                         w = 1
                                 except ValueError:
-                                    if tree.item(tree.get_children()[index],'values')[n-1] > tree.item(tree.get_children()[index + 1],'values')[n-1]:
+                                    if tree.item(tree.get_children()[index],'values')[n] > tree.item(tree.get_children()[index + 1],'values')[n]:
                                         tree.move(tree.get_children()[index],'',index=index+1)
                                         w = 1
-            sequence[n-1] = 1 - sequence[n-1]
+            sequence[n] = 1 - sequence[n]
         return tree
 
     def _caldata(s):
@@ -445,6 +444,7 @@ class Window: # 窗口类
                 if tempmax > max:
                     max = tempmax
             s.coderecord[s.codekey[code]][0][2] = '%.2f'%max+'%'
+            s.coderecord[s.codekey[code]].append(s.coderecord[s.codekey[code]][3][-1]/(s.coderecord[s.codekey[code]][1][-1]-s.coderecord[s.codekey[code]][1][0]).days*360)
         # 更新原表    
         for child in s.treeview.get_children(): 
                 s.treeview.delete(child)
@@ -468,6 +468,7 @@ class Window: # 窗口类
         s.coderecord[s.codekey[code]].append(x)
         s.coderecord[s.codekey[code]].append(y)
         s.coderecord[s.codekey[code]].append(s.chart.calpercent(y))
+
 
     def getdata(s):
         for code in s.originalfund:
@@ -552,7 +553,7 @@ class Window: # 窗口类
                     # print((x - s.coderecord[s.codekey[code]][1][0]).days,int(event.xdata+0.5) - (s.coderecord[s.codekey[code]][1][0] - dt.date(1970,1,1)).days)
                     strx = dt.datetime.strftime(x, '%Y-%m-%d')
                     if (x - s.coderecord[s.codekey[code]][1][0]).days >= int(event.xdata+0.5) - (s.coderecord[s.codekey[code]][1][0] - dt.date(1970,1,1)).days:
-                        s.detail.insert('','end',values=[s.coderecord[s.codekey[code]][0][0],strx,y,'%.2f'%z+'%'],tags=(s.coloruse[index],index))
+                        s.detail.insert('','end',values=[code,strx,y,'%.2f'%z+'%','%.2f'%s.coderecord[s.codekey[code]][4]+'%'],tags=(s.coloruse[index],index))
                         break
             s.chart.showgraph()
       

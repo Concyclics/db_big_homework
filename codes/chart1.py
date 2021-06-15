@@ -334,7 +334,7 @@ class Window: # 窗口类
         s.changeViewBt = Button(fm1,text='改变视图(净值图)',bg='#c0c0c0',command=s.changeView)
         s.changeViewBt.place(relx=0,rely=0,relwidth=0.15,relheight=0.05,anchor=NW)
         s.treeview = s.tree(fm2,4,['基金名称','夏普率','最大回撤','年化波动率'],[85,20,25,40])
-        s.detail = s.tree(fm3,5,['基金代码','日期','净值','总涨幅','年华收益率'],[30,40,30,20,40])
+        s.detail = s.tree(fm3,5,['基金代码','日期','净值','总涨幅','年化收益率'],[30,40,30,20,40])
         updateinfo1 = Label(s.root,text = '若未更新x-sign,',bg='black',fg='white')
         updateinfo2 = Label(s.root,text = '更新数据前可输入新的x-sign',bg='black',fg='white')
         updatebt = Button(s.root,text='更新数据',bg='#c0c0c0',command=s.update)

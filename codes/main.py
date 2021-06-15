@@ -56,6 +56,8 @@ if __name__=='__main__':
         if Tips.ensureWindow('更新数据','是否更新数据？')==True:
             databaseOP.update_mult(DB)
             Tips.TipsWindow('数据更新完毕!')
+    
+    DB.close()
                 
     win = chart1.Window()
     win.main()

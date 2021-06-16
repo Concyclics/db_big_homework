@@ -472,7 +472,7 @@ class Window: # 窗口类
         annual_volatility = annual_Volatility(s.coderecord[s.codekey[code]][1][0],s.coderecord[s.codekey[code]][1][-1],s.coderecord[s.codekey[code]][2])
         s.coderecord[s.codekey[code]][0][3] = '%.2f'%(annual_volatility*100.0)+'%'# 这是覆盖原数据的语句
         #夏普率
-        no_risk_yield=0.03045
+        no_risk_yield=0.01652
         Sharpe_ratio = (annual_yield/100.0 - no_risk_yield)/annual_volatility
         # print('annual_volatility:',annual_volatility,'sharpe:',Sharpe_ratio)
         s.coderecord[s.codekey[code]][0][1] = '%.2f'%Sharpe_ratio+'%'# 这是覆盖原数据的语句

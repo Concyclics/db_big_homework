@@ -432,18 +432,50 @@ class Window: # 窗口类
         return tree
 
     def updatedata(s,code):
-        # 计算最大回撤率
-        max = 0
+        # 最大回撤率
+        max_down = 0
         tempmax = 0
         for index in range(len(s.coderecord[s.codekey[code]][2])):
             for i in range(index + 1,len(s.coderecord[s.codekey[code]][2])):
                 temp = 100.0*(s.coderecord[s.codekey[code]][2][index] - s.coderecord[s.codekey[code]][2][i])/s.coderecord[s.codekey[code]][2][index]
                 if temp > tempmax:
                     tempmax = temp
-            if tempmax > max:
-                max = tempmax
-        s.coderecord[s.codekey[code]][0][2] = '%.2f'%max+'%'
-        s.coderecord[s.codekey[code]].append(s.coderecord[s.codekey[code]][3][-1]/(s.coderecord[s.codekey[code]][1][-1]-s.coderecord[s.codekey[code]][1][0]).days*365)
+            if tempmax > max_down:
+                max_down = tempmax
+        s.coderecord[s.codekey[code]][0][2] = '%.2f'%max_down+'%'
+        # 年化收益率
+        annual_yield = s.coderecord[s.codekey[code]][3][-1]/(s.coderecord[s.codekey[code]][1][-1]-s.coderecord[s.codekey[code]][1][0]).days*365
+        s.coderecord[s.codekey[code]].append(annual_yield)
+        #年化波动率
+        def annual_Volatility(date1, date2, NAV): #年化波动率
+            '''
+            输入：选定起止日期及这段时间内的NAV，
+            返回：年化波动率（返回小数）
+            '''
+            time=(date2 - date1).days
+            avg_yield=(NAV[-1]-NAV[0])/time
+            # print(time, avg_yield)
+            dayly_yield = lambda NAV1, NAV2: (NAV2-NAV1)/NAV1
+            temp=0
+            it = iter(NAV)
+            j=next(it)
+            try:
+                while True:
+                    i = j
+                    j=next(it)
+                    temp+=(dayly_yield(i,j)-avg_yield)**2
+            except StopIteration:
+                pass
+            standard_deviation=(temp/time)**0.5
+            annual_volatility=standard_deviation*((250)**0.5)
+            return annual_volatility
+        annual_volatility = annual_Volatility(s.coderecord[s.codekey[code]][1][0],s.coderecord[s.codekey[code]][1][-1],s.coderecord[s.codekey[code]][2])
+        s.coderecord[s.codekey[code]][0][3] = '%.2f'%(annual_volatility*100.0)+'%'# 这是覆盖原数据的语句
+        #夏普率
+        no_risk_yield=0.03045
+        Sharpe_ratio = (annual_yield/100.0 - no_risk_yield)/annual_volatility
+        # print('annual_volatility:',annual_volatility,'sharpe:',Sharpe_ratio)
+        s.coderecord[s.codekey[code]][0][1] = '%.2f'%Sharpe_ratio+'%'# 这是覆盖原数据的语句
 
     def _caldata(s):
         for code in s.originalfund:

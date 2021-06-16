@@ -364,7 +364,7 @@ class Window: # 窗口类
     def __del__(s):
         s.root.quit()
 
-    def tree(s,master,n:int,title:list,width:list):
+    def tree(s,master,num:int,title:list,width:list):
         scrollBar = Scrollbar(master,orient=VERTICAL)
         scrollBar.pack(side=RIGHT, fill=Y)
         style=ttk.Style(master)
@@ -372,16 +372,16 @@ class Window: # 窗口类
         style.configure('Treeview',background = 'white',selectbackground = 'black',fieldbackground = 'black')
         col = []
         sequence = []
-        for index in range(n):
+        for index in range(num):
             sequence.append(0)
             col.append('%d'%index)
         tree = ttk.Treeview(master,columns=col,show='headings',selectmode='extended',yscrollcommand=scrollBar.set)
         tree.pack(side=TOP, fill=BOTH,expand=Y)
         for color in s.chart.linecolor:
             tree.tag_configure(color,background='gray',foreground=color)
-        for i in range(n):
+        for i in range(num):
             tree.column('%d'%i,width=width[i],anchor='center')
-            tree.heading('%d'%i,text=title[i],command=lambda:orderby(i))
+            tree.heading('%d'%i,text=title[i],command=lambda colu=i:orderby(colu))
         scrollBar.config(command=tree.yview)
         def to_pinyin(s):
             '''转拼音

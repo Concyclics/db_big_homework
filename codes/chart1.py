@@ -443,7 +443,7 @@ class Window: # 窗口类
             if tempmax > max:
                 max = tempmax
         s.coderecord[s.codekey[code]][0][2] = '%.2f'%max+'%'
-        s.coderecord[s.codekey[code]].append(s.coderecord[s.codekey[code]][3][-1]/(s.coderecord[s.codekey[code]][1][-1]-s.coderecord[s.codekey[code]][1][0]).days*360)
+        s.coderecord[s.codekey[code]].append(s.coderecord[s.codekey[code]][3][-1]/(s.coderecord[s.codekey[code]][1][-1]-s.coderecord[s.codekey[code]][1][0]).days*365)
 
     def _caldata(s):
         for code in s.originalfund:

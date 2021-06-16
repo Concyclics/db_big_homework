@@ -334,7 +334,7 @@ class Window: # 窗口类
         s.changeViewBt = Button(fm1,text='改变视图(净值图)',bg='#c0c0c0',command=s.changeView)
         s.changeViewBt.place(relx=0,rely=0,relwidth=0.15,relheight=0.05,anchor=NW)
         s.treeview = s.tree(fm2,4,['基金名称','夏普率','最大回撤','年化波动率'],[85,20,25,40])
-        s.detail = s.tree(fm3,5,['基金代码','日期','净值','总涨幅','年华收益率'],[30,40,30,20,40])
+        s.detail = s.tree(fm3,5,['基金代码','日期','净值','总涨幅','年化收益率'],[30,40,30,20,40])
         updateinfo1 = Label(s.root,text = '若未更新x-sign,',bg='black',fg='white')
         updateinfo2 = Label(s.root,text = '更新数据前可输入新的x-sign',bg='black',fg='white')
         updatebt = Button(s.root,text='更新数据',bg='#c0c0c0',command=s.update)
@@ -364,7 +364,7 @@ class Window: # 窗口类
     def __del__(s):
         s.root.quit()
 
-    def tree(s,master,n:int,title:list,width:list):
+    def tree(s,master,num:int,title:list,width:list):
         scrollBar = Scrollbar(master,orient=VERTICAL)
         scrollBar.pack(side=RIGHT, fill=Y)
         style=ttk.Style(master)
@@ -372,16 +372,16 @@ class Window: # 窗口类
         style.configure('Treeview',background = 'white',selectbackground = 'black',fieldbackground = 'black')
         col = []
         sequence = []
-        for index in range(n):
+        for index in range(num):
             sequence.append(0)
             col.append('%d'%index)
         tree = ttk.Treeview(master,columns=col,show='headings',selectmode='extended',yscrollcommand=scrollBar.set)
         tree.pack(side=TOP, fill=BOTH,expand=Y)
         for color in s.chart.linecolor:
             tree.tag_configure(color,background='gray',foreground=color)
-        for i in range(n):
+        for i in range(num):
             tree.column('%d'%i,width=width[i],anchor='center')
-            tree.heading('%d'%i,text=title[i],command=lambda:orderby(i))
+            tree.heading('%d'%i,text=title[i],command=lambda colu=i:orderby(colu))
         scrollBar.config(command=tree.yview)
         def to_pinyin(s):
             '''转拼音

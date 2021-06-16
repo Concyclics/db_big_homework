@@ -9,7 +9,6 @@ import calendar
 import time
 import datetime as dt
 import tkinter.font as tkFont
-from tkinter.simpledialog import askstring
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from itertools import chain
 from pypinyin import pinyin, Style
@@ -18,6 +17,7 @@ import databaseOP
 # import fundation
 import creeper
 import Tips
+import getXsign
 
 datetime = calendar.datetime.datetime
 timedelta = calendar.datetime.timedelta
@@ -335,11 +335,9 @@ class Window: # 窗口类
         s.changeViewBt.place(relx=0,rely=0,relwidth=0.15,relheight=0.05,anchor=NW)
         s.treeview = s.tree(fm2,4,['基金名称','夏普率','最大回撤','年化波动率'],[85,20,25,40])
         s.detail = s.tree(fm3,5,['基金代码','日期','净值','总涨幅','年化收益率'],[30,40,30,20,40])
-        updateinfo1 = Label(s.root,text = '若未更新x-sign,',bg='black',fg='white')
-        updateinfo2 = Label(s.root,text = '更新数据前可输入新的x-sign',bg='black',fg='white')
+        updateinfo = Label(s.root,text = '更新数据时请耐心等待片刻',bg='black',fg='white')
         updatebt = Button(s.root,text='更新数据',bg='#c0c0c0',command=s.update)
-        updateinfo1.place(relx=0.92,rely=0.03,relwidth=0.4,relheight=0.04,anchor=CENTER)
-        updateinfo2.place(relx=0.92,rely=0.07,relwidth=0.4,relheight=0.04,anchor=CENTER)
+        updateinfo.place(relx=0.92,rely=0.05,relwidth=0.4,relheight=0.06,anchor=CENTER)
         updatebt.place(relx=0.98,rely=0.1,relwidth=0.1,relheight=0.05,anchor=NE)
         confirm = Button(s.root,text = '确定',bg='#c0c0c0',fg='black',command=s.addGraph)
         confirm.place(relx=0.75,rely=0.05,relwidth=0.07,relheight=0.05,anchor=CENTER)
@@ -447,35 +445,35 @@ class Window: # 窗口类
         annual_yield = s.coderecord[s.codekey[code]][3][-1]/(s.coderecord[s.codekey[code]][1][-1]-s.coderecord[s.codekey[code]][1][0]).days*365
         s.coderecord[s.codekey[code]].append(annual_yield)
         #年化波动率
-        def annual_Volatility(date1, date2, NAV): #年化波动率
-            '''
-            输入：选定起止日期及这段时间内的NAV，
-            返回：年化波动率（返回小数）
-            '''
-            time=(date2 - date1).days
-            avg_yield=(NAV[-1]-NAV[0])/time
-            # print(time, avg_yield)
-            dayly_yield = lambda NAV1, NAV2: (NAV2-NAV1)/NAV1
-            temp=0
-            it = iter(NAV)
-            j=next(it)
-            try:
-                while True:
-                    i = j
-                    j=next(it)
-                    temp+=(dayly_yield(i,j)-avg_yield)**2
-            except StopIteration:
-                pass
-            standard_deviation=(temp/time)**0.5
-            annual_volatility=standard_deviation*((250)**0.5)
-            return annual_volatility
-        annual_volatility = annual_Volatility(s.coderecord[s.codekey[code]][1][0],s.coderecord[s.codekey[code]][1][-1],s.coderecord[s.codekey[code]][2])
-        s.coderecord[s.codekey[code]][0][3] = '%.2f'%(annual_volatility*100.0)+'%'# 这是覆盖原数据的语句
-        #夏普率
-        no_risk_yield=0.01652
-        Sharpe_ratio = (annual_yield/100.0 - no_risk_yield)/annual_volatility
-        # print('annual_volatility:',annual_volatility,'sharpe:',Sharpe_ratio)
-        s.coderecord[s.codekey[code]][0][1] = '%.2f'%Sharpe_ratio+'%'# 这是覆盖原数据的语句
+        # def annual_Volatility(date1, date2, NAV): #年化波动率
+        #     '''
+        #     输入：选定起止日期及这段时间内的NAV，
+        #     返回：年化波动率（返回小数）
+        #     '''
+        #     time=(date2 - date1).days
+        #     avg_yield=(NAV[-1]-NAV[0])/time
+        #     # print(time, avg_yield)
+        #     dayly_yield = lambda NAV1, NAV2: (NAV2-NAV1)/NAV1
+        #     temp=0
+        #     it = iter(NAV)
+        #     j=next(it)
+        #     try:
+        #         while True:
+        #             i = j
+        #             j=next(it)
+        #             temp+=(dayly_yield(i,j)-avg_yield)**2
+        #     except StopIteration:
+        #         pass
+        #     standard_deviation=(temp/time)**0.5
+        #     annual_volatility=standard_deviation*((250)**0.5)
+        #     return annual_volatility
+        # annual_volatility = annual_Volatility(s.coderecord[s.codekey[code]][1][0],s.coderecord[s.codekey[code]][1][-1],s.coderecord[s.codekey[code]][2])
+        # s.coderecord[s.codekey[code]][0][3] = '%.2f'%(annual_volatility*100.0)+'%'# 这是覆盖原数据的语句
+        # #夏普率
+        # no_risk_yield=0.01652
+        # Sharpe_ratio = (annual_yield/100.0 - no_risk_yield)/annual_volatility
+        # # print('annual_volatility:',annual_volatility,'sharpe:',Sharpe_ratio)
+        # s.coderecord[s.codekey[code]][0][1] = '%.2f'%Sharpe_ratio+'%'# 这是覆盖原数据的语句
 
     def _caldata(s):
         for code in s.originalfund:
@@ -517,24 +515,21 @@ class Window: # 窗口类
         s._caldata()
 
     def update(s):
-        xsign = askstring("请检查x-sign", "若x-sign未更新,请输入最新x-sign:")
-        # print(xsign)
-        if xsign != None: #点击cancel 或 关闭按钮
-            if xsign != '': # 输入为空
-                temp = creeper.header_for_qieman
-                creeper.header_for_qieman['x-sign'] = xsign
-            if creeper.getFund(creeper.qieman[0]) == False: # x-sign不正确
-                Tips.failWindow("x-sign有误。")
-                if xsign != '': # 输入为空
-                    creeper.header_for_qieman = temp
-                return False
-            with databaseOP.DBconnect(password='19260817') as DB:
-                databaseOP.update_mult(DB)
+        cangetfund = creeper.getFund(creeper.qieman[0])
+        # if cangetfund == False: # x-sign不正确
+        #     creeper.header_for_qieman['x-sign'] = getXsign.getXsign()
+        #     cangetfund = creeper.getFund(creeper.qieman[0])
+        if cangetfund == False: #仍然有问题
+            Tips.failWindow("无法连接到网络.")
+            return False
+        Tips.successWindow("正在更新数据……")
+        with databaseOP.DBconnect(password='19260817') as DB:
+            databaseOP.update_mult(DB)
 
-            s.getdata() #重新获取数据，可以优化配合update_mult只更新小部分数据，如果重新获取开销太大，运行很慢
+        s.getdata() #重新获取数据，可以优化配合update_mult只更新小部分数据，如果重新获取开销太大，运行很慢
 
-            if len(s.fundINview) != 0:
-                s.reshowGraph() #重新显示图线
+        if len(s.fundINview) != 0:
+            s.reshowGraph() #重新显示图线
 
     def addColor(s):
         minlen = 5

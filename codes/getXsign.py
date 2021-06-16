@@ -14,7 +14,6 @@ def getXsign():
     browser = webdriver.Chrome(options=option)
 
 
-
     browser.get(url)
 
 
@@ -29,9 +28,12 @@ def getXsign():
             if 'headers' in info['request']:
                 #print(info['request']['headers'])
                 if 'x-sign' in info['request']['headers']:
+                    browser.close()
+                    # print(info['request']['headers']['x-sign'])
                     return info['request']['headers']['x-sign']
-                    
+    
     browser.close()
-        
+    return False
+                    
 if __name__=='__main__':
     print(getXsign())

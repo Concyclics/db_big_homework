@@ -743,7 +743,7 @@ class Chart(Frame):
 
     def calpercent(self,yy):
         if yy[0] == 0:
-            print('False')
+            # print('False')
             return False
         tmp = [0.0]
         first = yy[0]
@@ -769,7 +769,8 @@ class Chart(Frame):
             del self.lines[id]
             self.linenum -= 1
         else:
-            print('out of range')
+            # print('out of range')
+            return False
 
     def destroy(self):
         """重写destroy方法"""

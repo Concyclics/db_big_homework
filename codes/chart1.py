@@ -431,20 +431,23 @@ class Window: # 窗口类
             sequence[n] = 1 - sequence[n]
         return tree
 
+    def updatedata(s,code):
+        # 计算最大回撤率
+        max = 0
+        tempmax = 0
+        for index in range(len(s.coderecord[s.codekey[code]][2])):
+            for i in range(index + 1,len(s.coderecord[s.codekey[code]][2])):
+                temp = 100.0*(s.coderecord[s.codekey[code]][2][index] - s.coderecord[s.codekey[code]][2][i])/s.coderecord[s.codekey[code]][2][index]
+                if temp > tempmax:
+                    tempmax = temp
+            if tempmax > max:
+                max = tempmax
+        s.coderecord[s.codekey[code]][0][2] = '%.2f'%max+'%'
+        s.coderecord[s.codekey[code]].append(s.coderecord[s.codekey[code]][3][-1]/(s.coderecord[s.codekey[code]][1][-1]-s.coderecord[s.codekey[code]][1][0]).days*360)
+
     def _caldata(s):
         for code in s.originalfund:
-            #计算最大回撤率
-            max = 0
-            tempmax = 0
-            for index in range(len(s.coderecord[s.codekey[code]][2])):
-                for i in range(index + 1,len(s.coderecord[s.codekey[code]][2])):
-                    temp = 100.0*(s.coderecord[s.codekey[code]][2][index] - s.coderecord[s.codekey[code]][2][i])/s.coderecord[s.codekey[code]][2][index]
-                    if temp > tempmax:
-                        tempmax = temp
-                if tempmax > max:
-                    max = tempmax
-            s.coderecord[s.codekey[code]][0][2] = '%.2f'%max+'%'
-            s.coderecord[s.codekey[code]].append(s.coderecord[s.codekey[code]][3][-1]/(s.coderecord[s.codekey[code]][1][-1]-s.coderecord[s.codekey[code]][1][0]).days*360)
+            s.updatedata(code)
         # 更新原表    
         for child in s.treeview.get_children(): 
                 s.treeview.delete(child)
@@ -596,6 +599,7 @@ class Window: # 窗口类
                 for history in historylist:
                     databaseOP.addHistory(DB,history)
                 s.gethistory(DB,code)
+            s.updatedata(code)
                 
         if code not in s.fundINview:
             s.fundINview.append(code)

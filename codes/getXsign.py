@@ -31,7 +31,6 @@ def getX_sign():
             if 'headers' in info['request']:
                 #print(info['request']['headers'])
                 if 'x-sign' in info['request']['headers']:
-                    browser.close()
                     # print(info['request']['headers']['x-sign'])
                     return info['request']['headers']['x-sign']
     
@@ -40,6 +39,7 @@ def getX_sign():
 
 
 def getXsign():
+    
     
     t=int(creeper.header_for_qieman['x-sign'][0:13])//1000
     

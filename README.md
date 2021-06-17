@@ -18,6 +18,7 @@
 4. [codes/databaseOP.py](codes/databaseOP.py)
 5. [codes/chart1.py](codes/chart1.py)
 6. [codes/Tips.py](codes/Tips.py)
+7. [codes/getXsign.py](codes/getXsign.py)
 
 ##### [文档](documents/)
 
@@ -42,7 +43,8 @@
 #### 使用说明
 
 1.  打开MySQL服务
-2.  运行 codes/main.py
+2.  配置好reqirements.txt内的库
+3.  运行 codes/main.py
 
 #### 参与贡献
 

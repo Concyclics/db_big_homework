@@ -20,6 +20,7 @@ Software architecture description
 4. [codes/databaseOP.py](codes/databaseOP.py)
 5. [codes/chart1.py](codes/chart1.py)
 6. [codes/Tips.py](codes/Tips.py)
+7. [codes/getXsign.py](codes/getXsign.py)
 
 ##### [documnets](documents/)
 
@@ -43,6 +44,7 @@ Software architecture description
 #### Instructions
 
 1.  open MySQL service
+2.  install all modules in reqirments.txt
 2.  run codes/main.py
 
 #### Contribution

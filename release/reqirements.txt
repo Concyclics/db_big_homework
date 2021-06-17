@@ -11,3 +11,4 @@ pandas==1.2.4
 PyMySQL==1.0.2
 requests==2.25.1
 pypinyin==0.42.0
+selenium==3.141.0

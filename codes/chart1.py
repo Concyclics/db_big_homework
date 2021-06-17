@@ -525,6 +525,7 @@ class Window: # 窗口类
         Tips.successWindow("正在更新数据……")
         with databaseOP.DBconnect(password='19260817') as DB:
             databaseOP.update_mult(DB)
+            Tips.TipsWindow('数据更新完毕!')
 
         s.getdata() #重新获取数据，可以优化配合update_mult只更新小部分数据，如果重新获取开销太大，运行很慢
 

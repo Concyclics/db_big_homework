@@ -20,7 +20,7 @@ qieman.sort()
 
 #x-sign记得每天更新
 header_for_qieman={
-'x-sign':'1623760859649B3F6E25DC89B1F1512C02B04DE107C98' #2021-06-15
+'x-sign':'1623897696198395318DDBC26EFC3AA40DC4A6D28E8AC' #2021-06-17
 }
 
 #获取当天信息

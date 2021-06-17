@@ -20,14 +20,16 @@ qieman.sort()
 
 #x-sign记得每天更新
 header_for_qieman={
-'x-sign':'1623760859649B3F6E25DC89B1F1512C02B04DE107C98' #2021-06-15
+'x-sign':'1623897696198395318DDBC26EFC3AA40DC4A6D28E8AC' #2021-06-17
 }
 
 #获取当天信息
 def getfund_danjuan(code):
     url='https://danjuanapp.com/djapi/plan/'+code
-    page=requests.get(url,headers=header_for_danjuan).text
-    
+    try:
+        page=requests.get(url,headers=header_for_danjuan).text
+    except:
+        raise ValueError('无法连接网络')
     items=json.loads(page)
     if items.get('result_code')==91003:
         raise ValueError('请检查code')
@@ -107,8 +109,10 @@ def qieman_to_date(s):
 
 def getfund_qieman(code):
     url='https://qieman.com/pmdj/v1/pomodels/'+code
-    page=requests.get(url,headers=header_for_qieman).text
-    
+    try:
+        page=requests.get(url,headers=header_for_qieman).text
+    except:
+        raise ValueError('无法连接网络')
     if(page==''):
         raise ValueError('请设置x-sign或检查code')
     
@@ -213,7 +217,7 @@ def getHistory(code,size=10):
 if __name__=='__main__':
 
     for code in qieman:
-        getFund(code).display()
+        getFund(qieman[0]).display()
         for x in getHistory(code):
             x.display()
 

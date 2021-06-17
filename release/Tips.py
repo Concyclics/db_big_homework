@@ -5,7 +5,7 @@ import PySimpleGUI as sg
 
 gameID='投资组合评比器'
 author='制作者：陈涵、梁永豪、廖宇延'
-gameVersion='版本号：2021.06.09.Beta'
+gameVersion='版本号：2021.06.17.Beta'
 #初始化的欢迎弹窗
 def welcomeWindow():
 	layout4welcome = [[sg.Text("欢迎使用投资组合评比器！")],

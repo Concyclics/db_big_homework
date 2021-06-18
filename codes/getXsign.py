@@ -32,6 +32,7 @@ def getX_sign():
                 #print(info['request']['headers'])
                 if 'x-sign' in info['request']['headers']:
                     # print(info['request']['headers']['x-sign'])
+                    browser.close()
                     return info['request']['headers']['x-sign']
     
     browser.close()

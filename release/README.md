@@ -39,6 +39,7 @@
 4. 6.7 第一次中期检查.docx
 5. 6.18 第二次中期检查.docx
 6. 第6组实训报告 陈涵、梁永豪、廖宇延.docx
+7. 第6组实训报告 陈涵、梁永豪、廖宇延.pdf
 7. [现场记录.jpg](documents/现场记录.jpg)
 
 
@@ -48,7 +49,7 @@
 2. Windows/chromedriver.exe
 
 
-#### 使用说明
+### 使用说明
 
 1.	安装python3.8或更新版本，安装mysql8.0或更新版本。
 2.	安装好reqirements.txt里的所有库并配置selenium库的webdriver至默认路径。
@@ -56,4 +57,10 @@
 4.	运行main.py文件。
 5.	选择是否更新数据，选择“是”后，等待数据更新完毕，弹出“数据更新完毕”之后，关闭此弹窗，出现用户界面，或者选择否，直接进入用户界面。
 
+### 相关爬虫技术原创博客
 
+#### [爬虫专栏](https://blog.csdn.net/qq_21008741/category_11097367.html)
+1. [蛋卷基金爬虫——收集蛋卷基金上的投资组合数据](https://blog.csdn.net/qq_21008741/article/details/117117923)
+2. [天天基金爬虫——天天基金爬取基金信息统计持仓净值](https://blog.csdn.net/qq_21008741/article/details/117374507)
+3. [多线程爬虫小试牛刀——天天基金爬虫](https://blog.csdn.net/qq_21008741/article/details/117439382)
+4. [且慢基金爬虫——自动更新x-sign的投资组合爬取](https://blog.csdn.net/qq_21008741/article/details/117845316)
